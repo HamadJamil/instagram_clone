@@ -1,13 +1,14 @@
 import 'package:flutter/material.dart';
+import 'app_colors.dart';
 
 class AppTheme {
   static final ThemeData light = ThemeData(
     useMaterial3: true,
     colorScheme: ColorScheme.light(
-      primary: const Color(0xFF405DE6),
-      secondary: const Color(0xFF833AB4),
-      surface: Colors.white,
-      error: const Color(0xFFED4956),
+      primary: AppColors.primary,
+      secondary: AppColors.secondary,
+      surface: AppColors.surfaceLight,
+      error: AppColors.error,
     ),
     appBarTheme: const AppBarTheme(
       elevation: 0,
@@ -15,41 +16,41 @@ class AppTheme {
       titleTextStyle: TextStyle(
         fontSize: 24,
         fontWeight: FontWeight.bold,
-        color: Colors.black,
+        color: AppColors.black,
       ),
     ),
-    textTheme: TextTheme(
+    textTheme: const TextTheme(
       displayLarge: TextStyle(fontSize: 32, fontWeight: FontWeight.bold),
-      bodyLarge: TextStyle(fontSize: 16, color: Colors.black87),
+      bodyLarge: TextStyle(fontSize: 16, color: AppColors.black87),
     ),
-    inputDecorationTheme: InputDecorationTheme(
+    inputDecorationTheme: const InputDecorationTheme(
       contentPadding: EdgeInsets.symmetric(horizontal: 12.0, vertical: 4.0),
-      labelStyle: TextStyle(color: Colors.grey),
+      labelStyle: TextStyle(color: AppColors.grey),
       border: InputBorder.none,
     ),
     filledButtonTheme: FilledButtonThemeData(
       style: ElevatedButton.styleFrom(
-        backgroundColor: const Color(0xFF405DE6),
-        foregroundColor: Colors.white,
-        padding: const EdgeInsets.symmetric(horizontal: 16.0, vertical: 12.0),
+        backgroundColor: AppColors.primary,
+        foregroundColor: AppColors.white,
+        padding: EdgeInsets.symmetric(horizontal: 16.0, vertical: 12.0),
         shape: RoundedRectangleBorder(
-          borderRadius: BorderRadius.circular(20.0),
+          borderRadius: BorderRadius.all(Radius.circular(20.0)),
         ),
       ),
     ),
-    textSelectionTheme: TextSelectionThemeData(
-      cursorColor: Colors.grey[600],
-      selectionColor: Colors.grey[300],
-      selectionHandleColor: Colors.grey[400],
+    textSelectionTheme: const TextSelectionThemeData(
+      cursorColor: AppColors.grey600,
+      selectionColor: AppColors.grey300,
+      selectionHandleColor: AppColors.grey400,
     ),
     outlinedButtonTheme: OutlinedButtonThemeData(
       style: OutlinedButton.styleFrom(
+        side: BorderSide(color: AppColors.primary),
         backgroundColor: Colors.transparent,
-        foregroundColor: const Color(0xFF405DE6),
-        padding: const EdgeInsets.symmetric(horizontal: 16.0),
+        foregroundColor: AppColors.primary,
+        padding: EdgeInsets.symmetric(horizontal: 16.0),
         shape: RoundedRectangleBorder(
-          side: BorderSide(color: const Color(0xFF405DE6)),
-          borderRadius: BorderRadius.circular(20.0),
+          borderRadius: BorderRadius.all(Radius.circular(20.0)),
         ),
       ),
     ),
@@ -58,16 +59,16 @@ class AppTheme {
   static final ThemeData dark = ThemeData(
     useMaterial3: true,
     colorScheme: ColorScheme.dark(
-      primary: const Color(0xFF405DE6),
-      secondary: const Color(0xFF833AB4),
-      surface: const Color(0xFF121212),
-      error: const Color(0xFFED4956),
+      primary: AppColors.primary,
+      secondary: AppColors.secondary,
+      surface: AppColors.surfaceDark,
+      error: AppColors.error,
     ),
     appBarTheme: AppBarTheme(
-      foregroundColor: Colors.white,
+      foregroundColor: AppColors.white,
       elevation: 0,
       titleTextStyle: light.appBarTheme.titleTextStyle?.copyWith(
-        color: Colors.white,
+        color: AppColors.white,
       ),
     ),
     inputDecorationTheme: light.inputDecorationTheme,
@@ -75,8 +76,8 @@ class AppTheme {
     filledButtonTheme: light.filledButtonTheme,
     outlinedButtonTheme: light.outlinedButtonTheme,
     textTheme: light.textTheme.apply(
-      bodyColor: Colors.white,
-      displayColor: Colors.white,
+      bodyColor: AppColors.white,
+      displayColor: AppColors.white,
     ),
   );
 }

@@ -37,11 +37,9 @@ class AppRouteConfiguration {
     ],
     redirect: (context, state) {
       final isSplash = state.matchedLocation == '/';
-
       if (isSplash) {
-        return "/${AppRouteName.login}";
+        return '/${AppRouteName.login}';
       }
-
       return null;
     },
   );
