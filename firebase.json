@@ -1,0 +1,30 @@
+{
+  "flutter": {
+    "platforms": {
+      "android": {
+        "default": {
+          "projectId": "instagram-clone-dc11d",
+          "appId": "1:742200901476:android:814ad44ad8a1a52d728471",
+          "fileOutput": "android/app/google-services.json"
+        }
+      },
+      "dart": {
+        "lib/firebase_options.dart": {
+          "projectId": "instagram-clone-dc11d",
+          "configurations": {
+            "android": "1:742200901476:android:814ad44ad8a1a52d728471",
+            "ios": "1:742200901476:ios:b9e01dac016a0843728471"
+          }
+        }
+      }
+    }
+  },
+  "hosting": {
+    "public": "Y",
+    "ignore": [
+      "firebase.json",
+      "**/.*",
+      "**/node_modules/**"
+    ]
+  }
+}

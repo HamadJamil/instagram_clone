@@ -1,0 +1,14 @@
+[
+    {
+        "relation": [
+            "delegate_permission/common.handle_all_urls"
+        ],
+        "target": {
+            "namespace": "android_app",
+            "package_name": "com.example.instagram",
+            "sha256_cert_fingerprints": [
+                    "6B:C6:66:05:7E:A0:BE:75:D6:73:7D:48:AF:FC:A9:12:83:DC:25:BC:C8:CD:90:E7:4E:2B:DA:56:E7:2E:1C:5A"
+            ]
+        }
+    }
+]
