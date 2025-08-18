@@ -1,10 +1,11 @@
 import 'package:go_router/go_router.dart';
-import 'package:instagram/core/constants/routes/app_route_name.dart';
+import 'package:instagram/core/routes/app_route_name.dart';
 import 'package:instagram/features/auth/presentation/pages/email_verification_page.dart';
 import 'package:instagram/features/auth/presentation/pages/forgot_password_page.dart';
 import 'package:instagram/features/auth/presentation/pages/log_in_page.dart';
 import 'package:instagram/features/auth/presentation/pages/sign_up_page.dart';
 import 'package:instagram/features/auth/presentation/pages/splash_screen.dart';
+import 'package:instagram/features/home/home_screen.dart';
 
 class AppRouteConfiguration {
   static final GoRouter route = GoRouter(
@@ -33,6 +34,11 @@ class AppRouteConfiguration {
         path: '/emailVerification',
         name: AppRouteName.emailVerification,
         builder: (_, __) => const EmailVerificationPage(),
+      ),
+      GoRoute(
+        path: '/home',
+        name: AppRouteName.home,
+        builder: (_, __) => const HomeScreen(),
       ),
     ],
     redirect: (context, state) {

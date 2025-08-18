@@ -1,7 +1,7 @@
 import 'package:flutter/material.dart';
 
 import 'package:firebase_core/firebase_core.dart';
-import 'package:instagram/core/constants/routes/app_route_configuration.dart';
+import 'package:instagram/core/routes/app_route_configuration.dart';
 import 'package:instagram/core/theme/app_theme.dart';
 import 'package:instagram/firebase_options.dart';
 

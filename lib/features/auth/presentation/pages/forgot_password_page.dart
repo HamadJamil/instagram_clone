@@ -1,6 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:go_router/go_router.dart';
-import 'package:instagram/core/constants/routes/app_route_name.dart';
+import 'package:instagram/core/routes/app_route_name.dart';
 import 'package:instagram/core/widgets/custom_filled_button.dart';
 import 'package:instagram/core/widgets/custom_outlined_button.dart';
 import 'package:instagram/core/widgets/cutom_text_form_field.dart';

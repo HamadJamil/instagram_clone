@@ -22,16 +22,14 @@ class CustomTextFormField extends StatelessWidget {
         borderRadius: BorderRadius.circular(12),
         border: Border.all(color: Colors.grey[500]!),
       ),
-      child: Expanded(
-        child: TextFormField(
-          keyboardType: keyBoard,
-          controller: textController,
-          decoration: InputDecoration(
-            border: InputBorder.none,
-            label: Text(label),
-          ),
-          validator: validator,
+      child: TextFormField(
+        keyboardType: keyBoard,
+        controller: textController,
+        decoration: InputDecoration(
+          border: InputBorder.none,
+          label: Text(label),
         ),
+        validator: validator,
       ),
     );
   }
