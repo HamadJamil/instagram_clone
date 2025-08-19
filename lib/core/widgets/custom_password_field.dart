@@ -27,6 +27,7 @@ class _CustomPasswordFieldState extends State<CustomPasswordField> {
         border: Border.all(color: Colors.grey[500]!),
       ),
       child: TextFormField(
+        autovalidateMode: AutovalidateMode.onUserInteraction,
         obscureText: _isObscured,
         keyboardType: TextInputType.visiblePassword,
         obscuringCharacter: '*',

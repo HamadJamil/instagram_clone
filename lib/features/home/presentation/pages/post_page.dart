@@ -1,7 +1,10 @@
+import 'dart:io';
+
 import 'package:flutter/material.dart';
 import 'package:instagram/core/theme/app_colors.dart';
 import 'package:instagram/features/home/presentation/widgets/asset_thumbnail.dart';
 import 'package:photo_manager/photo_manager.dart';
+import 'package:photo_view/photo_view.dart';
 
 class PostPage extends StatefulWidget {
   const PostPage({super.key});
@@ -14,16 +17,18 @@ class _PostPageState extends State<PostPage> {
   List<AssetEntity> assets = [
     AssetEntity(id: '1', typeInt: 0, height: 10, width: 10),
   ];
+  late Future<File?> imageFile;
 
   Future<void> _loadAssets() async {
     assets.addAll(await PhotoManager.getAssetListRange(start: 0, end: 100));
+    imageFile = assets[1].file;
     setState(() {});
   }
 
   @override
   void initState() {
-    super.initState();
     _loadAssets();
+    super.initState();
   }
 
   @override
@@ -61,7 +66,7 @@ class _PostPageState extends State<PostPage> {
             child: Container(
               color: Colors.red,
               height: size.height * 0.5,
-              child: const Icon(Icons.image),
+              child: _buildSelectedPicture(imageFile),
             ),
           ),
           SliverAppBar(
@@ -96,6 +101,19 @@ class _PostPageState extends State<PostPage> {
           ),
         ],
       ),
+    );
+  }
+
+  Widget _buildSelectedPicture(Future<File?> imageFile) {
+    return FutureBuilder<File?>(
+      future: imageFile.then((file) => file!),
+      builder: (_, snapshot) {
+        final file = snapshot.data;
+        if (file == null) {
+          return Center(child: Icon(Icons.image));
+        }
+        return PhotoView(imageProvider: FileImage(file));
+      },
     );
   }
 }

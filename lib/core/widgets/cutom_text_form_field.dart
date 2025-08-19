@@ -23,6 +23,7 @@ class CustomTextFormField extends StatelessWidget {
         border: Border.all(color: Colors.grey[500]!),
       ),
       child: TextFormField(
+        autovalidateMode: AutovalidateMode.onUserInteraction,
         keyboardType: keyBoard,
         controller: textController,
         decoration: InputDecoration(
