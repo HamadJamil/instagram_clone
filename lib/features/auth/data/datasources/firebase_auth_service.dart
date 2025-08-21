@@ -5,7 +5,11 @@ import 'package:instagram/core/utils/exception.dart';
 import 'package:instagram/core/utils/utils.dart';
 
 class FirebaseAuthService {
-  final FirebaseAuth _auth = FirebaseAuth.instance;
+  final FirebaseAuth _auth;
+
+  FirebaseAuthService() : _auth = FirebaseAuth.instance;
+
+  Stream<User?> get userChanges => _auth.userChanges();
 
   Future<UserCredential?> createUserWithEmailAndPassword(
     String email,
@@ -18,7 +22,9 @@ class FirebaseAuthService {
     } on FirebaseAuthException catch (e) {
       throw AuthException(getMessageFromErrorCode(e.code), code: e.code);
     } on SocketException catch (e) {
-      throw NetworkException('Network error: ${e.message}');
+      throw NetworkException(
+        'FirebaseAuthService: Network error: ${e.message}',
+      );
     }
   }
 
@@ -33,7 +39,9 @@ class FirebaseAuthService {
     } on FirebaseAuthException catch (e) {
       throw AuthException(getMessageFromErrorCode(e.code), code: e.code);
     } on SocketException catch (e) {
-      throw NetworkException('Network error: ${e.message}');
+      throw NetworkException(
+        'FirebaseAuthService: Network error: ${e.message}',
+      );
     }
   }
 
@@ -43,30 +51,34 @@ class FirebaseAuthService {
     } on FirebaseAuthException catch (e) {
       throw AuthException(getMessageFromErrorCode(e.code), code: e.code);
     } on SocketException catch (e) {
-      throw NetworkException('Network error: ${e.message}');
+      throw NetworkException(
+        'FirebaseAuthService: Network error: ${e.message}',
+      );
     }
   }
 
   Future<void> emailVerification() async {
     try {
       if (_auth.currentUser == null) {
-        throw AuthException('No user is currently signed in');
+        throw AuthException(
+          'FirebaseAuthService: No user is currently signed in',
+        );
       }
       await _auth.currentUser?.sendEmailVerification();
     } on FirebaseAuthException catch (e) {
       throw AuthException(getMessageFromErrorCode(e.code), code: e.code);
     } on SocketException catch (e) {
-      throw NetworkException('Network error: ${e.message}');
+      throw NetworkException(
+        'FirebaseAuthService: Network error: ${e.message}',
+      );
     }
-  }
-
-  Future<bool> isLoggedIn() async {
-    return _auth.currentUser != null;
   }
 
   Future<void> signOut() async {
     if (_auth.currentUser == null) {
-      throw AuthException('No user is currently signed in');
+      throw AuthException(
+        'FirebaseAuthService: No user is currently signed in',
+      );
     }
     await _auth.signOut();
   }
@@ -74,14 +86,18 @@ class FirebaseAuthService {
   Future<bool> isUserEmailVerified() async {
     try {
       if (_auth.currentUser == null) {
-        throw AuthException('No user is currently signed in');
+        throw AuthException(
+          'FirebaseAuthService: No user is currently signed in',
+        );
       }
       await _auth.currentUser?.reload();
       return _auth.currentUser?.emailVerified ?? false;
     } on FirebaseAuthException catch (e) {
       throw AuthException(getMessageFromErrorCode(e.code), code: e.code);
     } on SocketException catch (e) {
-      throw NetworkException('Network error: ${e.message}');
+      throw NetworkException(
+        'FirebaseAuthService: Network error: ${e.message}',
+      );
     }
   }
 }

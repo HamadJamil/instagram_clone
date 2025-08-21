@@ -1,8 +1,13 @@
 import 'package:flutter/material.dart';
+import 'package:flutter_bloc/flutter_bloc.dart';
+import 'package:flutter_spinkit/flutter_spinkit.dart';
 import 'package:go_router/go_router.dart';
 import 'package:instagram/core/routes/app_route_name.dart';
+import 'package:instagram/core/theme/app_colors.dart';
 import 'package:instagram/core/widgets/custom_password_field.dart';
 import 'package:instagram/core/widgets/cutom_text_form_field.dart';
+import 'package:instagram/features/auth/presentation/cubits/auth_cubit.dart';
+import 'package:instagram/features/auth/presentation/cubits/auth_state.dart';
 
 class LogInPage extends StatefulWidget {
   const LogInPage({super.key});
@@ -12,73 +17,144 @@ class LogInPage extends StatefulWidget {
 }
 
 class _LogInPageState extends State<LogInPage> {
+  late TextEditingController _emailController;
+  late TextEditingController _passwordController;
+  late GlobalKey<FormState> _formKey;
+
+  @override
+  void initState() {
+    super.initState();
+    _emailController = TextEditingController();
+    _passwordController = TextEditingController();
+    _formKey = GlobalKey<FormState>();
+  }
+
+  @override
+  void dispose() {
+    _emailController.dispose();
+    _passwordController.dispose();
+    super.dispose();
+  }
+
   @override
   Widget build(BuildContext context) {
-    final size = MediaQuery.of(context).size;
-    return Scaffold(
-      resizeToAvoidBottomInset: false,
-      body: Center(
-        child: Padding(
-          padding: const EdgeInsets.symmetric(horizontal: 12.0),
-          child: Column(
-            children: [
-              SizedBox(height: size.height * 0.17),
-              const Image(
-                image: AssetImage('assets/images/instagram.png'),
-                height: 80.0,
-                width: 80.0,
-              ),
-              SizedBox(height: size.height * 0.1),
-              CustomTextFormField(
-                label: 'Email',
-                textController: TextEditingController(), // Add Controller
-                keyBoard: TextInputType.emailAddress,
-                validator: (value) {
-                  return null;
-                }, // Add validation logic here
-              ),
-              SizedBox(height: size.height * 0.015),
+    return BlocConsumer<AuthCubit, AuthState>(
+      listener: (context, state) {
+        if (state is AuthError) {
+          ScaffoldMessenger.of(
+            context,
+          ).showSnackBar(SnackBar(content: Text(state.message)));
+        }
+        if (state is AuthSuccess) {
+          if (state.isEmailVerified) {
+            context.goNamed(AppRouteName.home);
+          } else {
+            context.goNamed(AppRouteName.emailVerification);
+          }
+        }
+      },
+      builder: (context, state) {
+        return Scaffold(
+          resizeToAvoidBottomInset: false,
+          body: Center(
+            child: Padding(
+              padding: const EdgeInsets.symmetric(horizontal: 12.0),
+              child: Form(
+                key: _formKey,
+                child: Column(
+                  children: [
+                    const SizedBox(height: 140),
+                    const Image(
+                      image: AssetImage('assets/images/instagram.png'),
+                      height: 80.0,
+                      width: 80.0,
+                    ),
+                    const SizedBox(height: 40),
+                    CustomTextFormField(
+                      label: 'Email',
+                      textController: _emailController,
+                      keyBoard: TextInputType.emailAddress,
+                      validator: (value) {
+                        if (value == null || value.isEmpty) {
+                          return 'Please enter your email';
+                        }
+                        if (!value.contains('@')) {
+                          return 'Please enter a valid email';
+                        }
+                        return null;
+                      },
+                    ),
+                    const SizedBox(height: 10),
 
-              CustomPasswordField(
-                label: 'Password',
-                textController: TextEditingController(),
-              ),
-              SizedBox(height: size.height * 0.015),
-              SizedBox(
-                width: double.infinity,
-                height: size.height * 0.055,
-                child: FilledButton(
-                  onPressed: () {
-                    context.goNamed(AppRouteName.home);
-                  },
-                  child: Text('Log in'),
+                    CustomPasswordField(
+                      label: 'Password',
+                      textController: _passwordController,
+                      validator: (value) {
+                        if (value == null || value.isEmpty) {
+                          return 'Please enter your password';
+                        }
+                        return null;
+                      },
+                    ),
+                    const SizedBox(height: 15),
+                    BlocBuilder<AuthCubit, AuthState>(
+                      builder: (context, state) {
+                        return SizedBox(
+                          width: double.infinity,
+                          child: FilledButton(
+                            onPressed: () => _signIn(context),
+                            child: state is AuthLoading
+                                ? SpinKitWave(
+                                    color: AppColors.white,
+                                    size: 20.0,
+                                  )
+                                : const Text('Log in'),
+                          ),
+                        );
+                      },
+                    ),
+                    const SizedBox(height: 10),
+                    InkWell(
+                      onTap: () {
+                        context.goNamed(AppRouteName.forgotPassword);
+                      },
+                      child: Text('Forgot password?'),
+                    ),
+                    Expanded(
+                      child: Align(
+                        alignment: Alignment.bottomCenter,
+                        child: OutlinedButton(
+                          onPressed: () {
+                            context.goNamed(AppRouteName.signup);
+                          },
+                          child: Text(
+                            'Create new account',
+                            style: TextStyle(
+                              fontSize: 16,
+                              fontWeight: FontWeight.w400,
+                            ),
+                          ),
+                        ),
+                      ),
+                    ),
+                    const SizedBox(height: 70),
+                  ],
                 ),
               ),
-              SizedBox(height: size.height * 0.025),
-              InkWell(
-                onTap: () {
-                  context.goNamed(AppRouteName.forgotPassword);
-                },
-                child: Text('Forgot password?'),
-              ),
-              SizedBox(height: size.height * 0.225),
-              SizedBox(
-                height: size.height * 0.055,
-                width: double.infinity,
-                child: OutlinedButton(
-                  onPressed: () {
-                    context.goNamed(AppRouteName.signup);
-                  },
-                  child: Text(
-                    'Create new account',
-                    style: TextStyle(fontSize: 16, fontWeight: FontWeight.w400),
-                  ),
-                ),
-              ),
-            ],
+            ),
           ),
-        ),
-      ),
+        );
+      },
     );
+  }
+
+  void _signIn(BuildContext context) {
+    FocusScope.of(context).unfocus();
+    if (_formKey.currentState!.validate()) {
+      context.read<AuthCubit>().login(
+        email: _emailController.text,
+        password: _passwordController.text,
+      );
+    }
   }
 }

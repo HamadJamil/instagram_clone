@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 
 class AppColors {
+  const AppColors._();
   static const Color primary = Colors.blueAccent;
   static const Color secondary = Color(0xFF833AB4);
   static const Color error = Color(0xFFED4956);

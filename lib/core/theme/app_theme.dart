@@ -31,7 +31,7 @@ class AppTheme {
 
     filledButtonTheme: FilledButtonThemeData(
       style: ElevatedButton.styleFrom(
-        minimumSize: const Size(double.infinity, 45),
+        minimumSize: const Size(double.infinity, 55),
         backgroundColor: AppColors.primary,
         foregroundColor: AppColors.white,
         padding: EdgeInsets.symmetric(horizontal: 16.0, vertical: 12.0),
@@ -49,7 +49,7 @@ class AppTheme {
 
     outlinedButtonTheme: OutlinedButtonThemeData(
       style: OutlinedButton.styleFrom(
-        minimumSize: const Size(double.infinity, 45),
+        minimumSize: const Size(double.infinity, 55),
         side: BorderSide(color: AppColors.primary),
         backgroundColor: Colors.transparent,
         foregroundColor: AppColors.primary,

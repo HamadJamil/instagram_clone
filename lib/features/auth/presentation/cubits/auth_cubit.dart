@@ -1,3 +1,6 @@
+import 'dart:async';
+
+import 'package:firebase_auth/firebase_auth.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:instagram/features/auth/domain/repositories/auth_repository.dart';
 
@@ -5,9 +8,22 @@ import 'package:instagram/features/auth/presentation/cubits/auth_state.dart';
 
 class AuthCubit extends Cubit<AuthState> {
   final AuthRepository authRepository;
+  // ignore: unused_field
+  late StreamSubscription<User?> _userSubscription;
+
   AuthCubit({required this.authRepository}) : super(AuthInitial());
 
-  Future<void> register({
+  void startListeningToAuthChanges() {
+    _userSubscription = authRepository.userChanges.listen((user) {
+      if (user == null) {
+        emit(AuthInitial());
+      } else {
+        emit(AuthSuccess(isEmailVerified: user.emailVerified));
+      }
+    });
+  }
+
+  Future<void> signUp({
     required String name,
     required String email,
     required String password,
@@ -19,7 +35,8 @@ class AuthCubit extends Cubit<AuthState> {
         email,
         password,
       );
-      sendVerificationEmail();
+      await authRepository.verifyEmail();
+      emit(AuthVerificationSent());
     } on Exception catch (e) {
       emit(AuthError(e.toString()));
     }
@@ -28,11 +45,12 @@ class AuthCubit extends Cubit<AuthState> {
   Future<void> login({required String email, required String password}) async {
     emit(AuthLoading());
     try {
-      final user = await authRepository.signInWithEmailAndPassword(
-        email,
-        password,
+      await authRepository.signInWithEmailAndPassword(email, password);
+      emit(
+        AuthSuccess(
+          isEmailVerified: await authRepository.isUserEmailVerified(),
+        ),
       );
-      emit(AuthSuccess(user!));
     } on Exception catch (e) {
       emit(AuthError(e.toString()));
     }

@@ -1,3 +1,4 @@
+import 'package:firebase_auth/firebase_auth.dart';
 import 'package:instagram/core/utils/exception.dart';
 import 'package:instagram/features/auth/data/datasources/firebase_auth_service.dart';
 import 'package:instagram/features/auth/data/datasources/firestore_user_service.dart';
@@ -14,6 +15,9 @@ class AuthRepositoryImplementation implements AuthRepository {
   );
 
   @override
+  Stream<User?> get userChanges => _firebaseAuthService.userChanges;
+
+  @override
   Future<bool> isUserEmailVerified() async {
     try {
       return await _firebaseAuthService.isUserEmailVerified();
@@ -23,12 +27,7 @@ class AuthRepositoryImplementation implements AuthRepository {
   }
 
   @override
-  Future<bool> isLoggedIn() async {
-    return _firebaseAuthService.isLoggedIn();
-  }
-
-  @override
-  Future<UserModel?> createUserWithEmailAndPassword(
+  Future<void> createUserWithEmailAndPassword(
     String userName,
     String email,
     String password,
@@ -46,7 +45,6 @@ class AuthRepositoryImplementation implements AuthRepository {
       if (user != null) {
         await _fireStoreUserService.createUser(userModel);
       }
-      return user != null ? userModel : null;
     } on AuthException {
       rethrow;
     } on NetworkException {
@@ -85,18 +83,9 @@ class AuthRepositoryImplementation implements AuthRepository {
   }
 
   @override
-  Future<UserModel?> signInWithEmailAndPassword(
-    String email,
-    String password,
-  ) async {
+  Future<void> signInWithEmailAndPassword(String email, String password) async {
     try {
-      final user = await _firebaseAuthService.signInWithEmailAndPassword(
-        email,
-        password,
-      );
-      return user != null
-          ? await _fireStoreUserService.getUser(user.user?.uid ?? '')
-          : null;
+      await _firebaseAuthService.signInWithEmailAndPassword(email, password);
     } on AuthException {
       rethrow;
     } on NetworkException {
@@ -104,7 +93,7 @@ class AuthRepositoryImplementation implements AuthRepository {
     } on FirestoreException {
       rethrow;
     } catch (e) {
-      throw Exception('An unexpected error occurred: $e');
+      throw Exception('AuthRepo Sigin Failed $e');
     }
   }
 

@@ -1,4 +1,6 @@
-class UserModel {
+import 'package:equatable/equatable.dart';
+
+class UserModel extends Equatable {
   final String uid;
   final String name;
   final String email;
@@ -8,7 +10,7 @@ class UserModel {
   final String? photoUrl;
   final String? bio;
 
-  UserModel({
+  const UserModel({
     required this.uid,
     required this.name,
     required this.email,
@@ -24,10 +26,10 @@ class UserModel {
       uid: json['uid'],
       name: json['name'],
       email: json['email'],
-      following: List<String>.from(json['following']),
-      followers: List<String>.from(json['followers']),
+      following: List<String>.from(json['following'] ?? []),
+      followers: List<String>.from(json['followers'] ?? []),
       photoUrl: json['photoUrl'],
-      posts: List<String>.from(json['posts']),
+      posts: List<String>.from(json['posts'] ?? []),
       bio: json['bio'],
     );
   }
@@ -66,4 +68,22 @@ class UserModel {
       bio: bio ?? this.bio,
     );
   }
+
+  @override
+  String toString() {
+    return 'UserModel(uid: $uid, name: $name, email: $email, following: $following, followers: $followers, photoUrl: $photoUrl, posts: $posts, bio: $bio)';
+  }
+
+  @override
+  // TODO: implement props
+  List<Object?> get props => [
+    uid,
+    name,
+    email,
+    following,
+    followers,
+    photoUrl,
+    posts,
+    bio,
+  ];
 }

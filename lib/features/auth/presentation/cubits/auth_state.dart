@@ -1,5 +1,4 @@
 import 'package:equatable/equatable.dart';
-import 'package:instagram/features/auth/domain/entities/user_model.dart';
 
 abstract class AuthState extends Equatable {
   const AuthState();
@@ -13,11 +12,11 @@ class AuthInitial extends AuthState {}
 class AuthLoading extends AuthState {}
 
 class AuthSuccess extends AuthState {
-  final UserModel user;
-  const AuthSuccess(this.user);
+  final bool isEmailVerified;
+  const AuthSuccess({this.isEmailVerified = false});
 
   @override
-  List<Object> get props => [user];
+  List<Object> get props => [isEmailVerified];
 }
 
 class AuthError extends AuthState {

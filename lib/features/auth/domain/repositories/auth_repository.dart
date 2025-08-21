@@ -1,10 +1,8 @@
-import 'package:instagram/features/auth/domain/entities/user_model.dart';
+import 'package:firebase_auth/firebase_auth.dart';
 
 abstract class AuthRepository {
-  //Check if user is logged in
-  Future<bool> isLoggedIn();
   //Create User
-  Future<UserModel?> createUserWithEmailAndPassword(
+  Future<void> createUserWithEmailAndPassword(
     String userName,
     String email,
     String password,
@@ -16,7 +14,9 @@ abstract class AuthRepository {
   //Verify Email
   Future<void> verifyEmail();
   //Sign In User
-  Future<UserModel?> signInWithEmailAndPassword(String email, String password);
+  Future<void> signInWithEmailAndPassword(String email, String password);
   //Sign Out User
   Future<void> signOut();
+  //Stream
+  Stream<User?> get userChanges;
 }

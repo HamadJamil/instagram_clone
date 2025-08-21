@@ -1,7 +1,9 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
+import 'package:flutter_spinkit/flutter_spinkit.dart';
 import 'package:go_router/go_router.dart';
 import 'package:instagram/core/routes/app_route_name.dart';
+import 'package:instagram/core/theme/app_colors.dart';
 import 'package:instagram/core/widgets/custom_password_field.dart';
 import 'package:instagram/core/widgets/cutom_text_form_field.dart';
 import 'package:instagram/features/auth/presentation/cubits/auth_cubit.dart';
@@ -15,10 +17,19 @@ class SignUpPage extends StatefulWidget {
 }
 
 class _SignUpPageState extends State<SignUpPage> {
-  final TextEditingController _usernameController = TextEditingController();
-  final TextEditingController _emailController = TextEditingController();
-  final TextEditingController _passwordController = TextEditingController();
-  final GlobalKey<FormState> _formKey = GlobalKey<FormState>();
+  late TextEditingController _usernameController;
+  late TextEditingController _emailController;
+  late TextEditingController _passwordController;
+  late GlobalKey<FormState> _formKey;
+
+  @override
+  void initState() {
+    super.initState();
+    _usernameController = TextEditingController();
+    _emailController = TextEditingController();
+    _passwordController = TextEditingController();
+    _formKey = GlobalKey<FormState>();
+  }
 
   @override
   void dispose() {
@@ -28,19 +39,8 @@ class _SignUpPageState extends State<SignUpPage> {
     super.dispose();
   }
 
-  void _signUp() {
-    if (_formKey.currentState!.validate()) {
-      context.read<AuthCubit>().register(
-        name: _usernameController.text,
-        email: _emailController.text,
-        password: _passwordController.text,
-      );
-    }
-  }
-
   @override
   Widget build(BuildContext context) {
-    final size = MediaQuery.of(context).size;
     return BlocListener<AuthCubit, AuthState>(
       listener: (context, state) {
         if (state is AuthError) {
@@ -48,7 +48,7 @@ class _SignUpPageState extends State<SignUpPage> {
             context,
           ).showSnackBar(SnackBar(content: Text(state.message)));
         }
-        if (state is AuthSuccess) {
+        if (state is AuthVerificationSent) {
           context.goNamed(AppRouteName.emailVerification);
         }
       },
@@ -61,13 +61,13 @@ class _SignUpPageState extends State<SignUpPage> {
               key: _formKey,
               child: Column(
                 children: [
-                  SizedBox(height: size.height * 0.17),
+                  const SizedBox(height: 140),
                   const Image(
                     image: AssetImage('assets/images/instagram.png'),
                     height: 80.0,
                     width: 80.0,
                   ),
-                  SizedBox(height: size.height * 0.1),
+                  const SizedBox(height: 40.0),
                   CustomTextFormField(
                     label: 'Username',
                     textController: _usernameController,
@@ -79,7 +79,7 @@ class _SignUpPageState extends State<SignUpPage> {
                       return null;
                     },
                   ),
-                  SizedBox(height: size.height * 0.015),
+                  const SizedBox(height: 10.0),
                   CustomTextFormField(
                     label: 'Email',
                     textController: _emailController,
@@ -94,7 +94,7 @@ class _SignUpPageState extends State<SignUpPage> {
                       return null;
                     },
                   ),
-                  SizedBox(height: size.height * 0.015),
+                  const SizedBox(height: 10.0),
                   CustomPasswordField(
                     label: 'Password',
                     textController: _passwordController,
@@ -108,39 +108,45 @@ class _SignUpPageState extends State<SignUpPage> {
                       return null;
                     },
                   ),
-                  SizedBox(height: size.height * 0.015),
+                  const SizedBox(height: 15.0),
                   BlocBuilder<AuthCubit, AuthState>(
                     builder: (context, state) {
                       return SizedBox(
                         width: double.infinity,
-                        height: size.height * 0.055,
                         child: FilledButton(
-                          onPressed: state is AuthLoading ? null : _signUp,
-                          child: Text(
-                            state is AuthLoading ? 'Signing Up...' : 'Sign Up',
-                            style: const TextStyle(
-                              fontSize: 16.0,
-                              fontWeight: FontWeight.w500,
-                            ),
-                          ),
+                          onPressed: () => _signUp(context),
+                          child: state is AuthLoading
+                              ? SpinKitWave(color: AppColors.white, size: 20.0)
+                              : const Text(
+                                  'Sign Up',
+                                  style: TextStyle(
+                                    fontSize: 16.0,
+                                    fontWeight: FontWeight.w500,
+                                  ),
+                                ),
                         ),
                       );
                     },
                   ),
-                  SizedBox(height: size.height * 0.2),
-                  InkWell(
-                    onTap: () {
-                      context.goNamed(AppRouteName.login);
-                    },
-                    child: Text(
-                      'I already have an account',
-                      style: TextStyle(
-                        color: Theme.of(context).colorScheme.primary,
-                        fontSize: 15.0,
-                        fontWeight: FontWeight.w500,
+                  Expanded(
+                    child: Align(
+                      alignment: Alignment.bottomCenter,
+                      child: InkWell(
+                        onTap: () {
+                          context.goNamed(AppRouteName.login);
+                        },
+                        child: Text(
+                          'I already have an account',
+                          style: TextStyle(
+                            color: Theme.of(context).colorScheme.primary,
+                            fontSize: 15.0,
+                            fontWeight: FontWeight.w500,
+                          ),
+                        ),
                       ),
                     ),
                   ),
+                  const SizedBox(height: 80),
                 ],
               ),
             ),
@@ -148,5 +154,16 @@ class _SignUpPageState extends State<SignUpPage> {
         ),
       ),
     );
+  }
+
+  void _signUp(BuildContext context) {
+    FocusScope.of(context).unfocus();
+    if (_formKey.currentState!.validate()) {
+      context.read<AuthCubit>().signUp(
+        name: _usernameController.text,
+        email: _emailController.text,
+        password: _passwordController.text,
+      );
+    }
   }
 }

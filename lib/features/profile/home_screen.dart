@@ -1,7 +1,8 @@
 import 'package:flutter/material.dart';
-import 'package:instagram/features/home/presentation/pages/post_page.dart';
-import 'package:instagram/features/home/presentation/pages/profile_page.dart';
-import 'package:photo_manager/photo_manager.dart';
+import 'package:go_router/go_router.dart';
+import 'package:instagram/core/routes/app_route_name.dart';
+import 'package:instagram/features/profile/presentation/pages/home_page.dart';
+import 'package:instagram/features/profile/presentation/pages/profile_page.dart';
 
 class HomeScreen extends StatefulWidget {
   const HomeScreen({super.key});
@@ -17,25 +18,11 @@ class _HomeScreenState extends State<HomeScreen> {
   Widget build(BuildContext context) {
     return Scaffold(
       floatingActionButtonLocation: FloatingActionButtonLocation.centerDocked,
-      body: selectedIndex == 0
-          ? Center(child: Text('Home Content Here'))
-          : ProfilePage(),
+      body: selectedIndex == 0 ? HomePage() : ProfilePage(),
 
       floatingActionButton: FloatingActionButton(
         onPressed: () {
-          PhotoManager.requestPermissionExtend().then((result) {
-            if (!context.mounted) return;
-            if (result.isAuth) {
-              Navigator.push(
-                context,
-                MaterialPageRoute(builder: (context) => PostPage()),
-              );
-            } else {
-              ScaffoldMessenger.of(
-                context,
-              ).showSnackBar(SnackBar(content: Text('Permission denied')));
-            }
-          });
+          context.pushNamed(AppRouteName.createPost);
         },
         child: Icon(Icons.add),
       ),

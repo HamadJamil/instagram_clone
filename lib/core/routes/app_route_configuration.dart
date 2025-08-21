@@ -5,7 +5,8 @@ import 'package:instagram/features/auth/presentation/pages/forgot_password_page.
 import 'package:instagram/features/auth/presentation/pages/log_in_page.dart';
 import 'package:instagram/features/auth/presentation/pages/sign_up_page.dart';
 import 'package:instagram/features/auth/presentation/pages/splash_screen.dart';
-import 'package:instagram/features/home/home_screen.dart';
+import 'package:instagram/features/post/presentation/pages/post_page.dart';
+import 'package:instagram/features/profile/home_screen.dart';
 
 class AppRouteConfiguration {
   static final GoRouter route = GoRouter(
@@ -40,13 +41,11 @@ class AppRouteConfiguration {
         name: AppRouteName.home,
         builder: (_, __) => const HomeScreen(),
       ),
+      GoRoute(
+        path: '/createPost',
+        name: AppRouteName.createPost,
+        builder: (_, __) => const PostPage(),
+      ),
     ],
-    redirect: (context, state) {
-      final isSplash = state.matchedLocation == '/';
-      if (isSplash) {
-        return '/${AppRouteName.login}';
-      }
-      return null;
-    },
   );
 }
