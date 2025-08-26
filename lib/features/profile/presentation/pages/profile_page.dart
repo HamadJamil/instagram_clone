@@ -1,3 +1,4 @@
+import 'package:cached_network_image/cached_network_image.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:flutter_spinkit/flutter_spinkit.dart';
@@ -7,7 +8,8 @@ import 'package:instagram/features/profile/presentation/cubits/profile_state.dar
 import 'package:instagram/features/profile/presentation/pages/edit_profile.dart';
 
 class ProfilePage extends StatefulWidget {
-  const ProfilePage({super.key});
+  const ProfilePage({super.key, required this.userId});
+  final String userId;
 
   @override
   State<ProfilePage> createState() => _ProfilePageState();
@@ -17,12 +19,11 @@ class _ProfilePageState extends State<ProfilePage> {
   @override
   void initState() {
     super.initState();
-    context.read<ProfileCubit>().loadProfile();
+    context.read<ProfileCubit>().loadProfile(widget.userId);
   }
 
   @override
   Widget build(BuildContext context) {
-    final size = MediaQuery.of(context).size;
     return BlocConsumer<ProfileCubit, ProfileState>(
       listener: (context, state) {
         if (state is ProfileError) {
@@ -36,14 +37,15 @@ class _ProfilePageState extends State<ProfilePage> {
           return Center(child: SpinKitWave(color: AppColors.primary, size: 40));
         }
         if (state is ProfileLoaded) {
-          final user = state.user;
+          final profileState = state;
+          final user = profileState.user;
+          final posts = profileState.posts;
+
           return Scaffold(
             body: CustomScrollView(
               slivers: [
                 SliverAppBar(
-                  actionsPadding: EdgeInsets.symmetric(
-                    horizontal: size.width * 0.03,
-                  ),
+                  actionsPadding: EdgeInsets.symmetric(horizontal: 8.0),
                   title: Text('${user.name.toLowerCase()}_'),
                   floating: true,
                   centerTitle: false,
@@ -59,14 +61,18 @@ class _ProfilePageState extends State<ProfilePage> {
 
                 SliverToBoxAdapter(
                   child: Padding(
-                    padding: const EdgeInsets.all(16),
+                    padding: const EdgeInsets.only(
+                      left: 16,
+                      right: 16,
+                      top: 16,
+                    ),
                     child: Column(
                       mainAxisAlignment: MainAxisAlignment.start,
                       crossAxisAlignment: CrossAxisAlignment.start,
                       children: [
                         SizedBox(
-                          width: size.width,
-                          height: size.height * 0.1,
+                          width: double.infinity,
+                          height: 70,
                           child: Row(
                             children: [
                               Stack(
@@ -87,14 +93,14 @@ class _ProfilePageState extends State<ProfilePage> {
                                   ),
                                 ],
                               ),
-                              SizedBox(width: size.width * 0.06),
+                              const SizedBox(width: 16.0),
                               Column(
                                 mainAxisAlignment: MainAxisAlignment.start,
                                 crossAxisAlignment: CrossAxisAlignment.start,
                                 children: [
                                   Text(
                                     user.name,
-                                    style: TextStyle(
+                                    style: const TextStyle(
                                       fontWeight: FontWeight.bold,
                                     ),
                                   ),
@@ -102,16 +108,16 @@ class _ProfilePageState extends State<ProfilePage> {
                                     child: Row(
                                       children: [
                                         _buildStatItem(
-                                          user.posts?.length.toString() ?? '0',
+                                          user.postCount.toString(),
                                           'posts',
                                         ),
-                                        SizedBox(width: size.width * 0.07),
+                                        const SizedBox(width: 20.0),
                                         _buildStatItem(
                                           user.followers?.length.toString() ??
                                               '0',
                                           'followers',
                                         ),
-                                        SizedBox(width: size.width * 0.07),
+                                        const SizedBox(width: 20.0),
                                         _buildStatItem(
                                           user.following?.length.toString() ??
                                               '0',
@@ -125,13 +131,13 @@ class _ProfilePageState extends State<ProfilePage> {
                             ],
                           ),
                         ),
-                        SizedBox(height: size.height * 0.02),
+                        const SizedBox(height: 16.0),
                         Text(
                           user.bio ?? 'No bio available',
-                          style: TextStyle(fontWeight: FontWeight.w400),
+                          style: const TextStyle(fontWeight: FontWeight.w400),
                           textAlign: TextAlign.center,
                         ),
-                        SizedBox(height: size.height * 0.02),
+                        const SizedBox(height: 16.0),
                         OutlinedButton(
                           onPressed: () {
                             Navigator.push(
@@ -159,20 +165,38 @@ class _ProfilePageState extends State<ProfilePage> {
                   floating: true,
                   pinned: true,
                 ),
-                SliverGrid(
-                  gridDelegate: const SliverGridDelegateWithFixedCrossAxisCount(
-                    crossAxisCount: 3,
-                    childAspectRatio: .6,
-                    crossAxisSpacing: 3,
-                    mainAxisSpacing: 3,
+                if (posts != null && posts.isNotEmpty) ...[
+                  SliverGrid(
+                    gridDelegate:
+                        const SliverGridDelegateWithFixedCrossAxisCount(
+                          crossAxisCount: 3,
+                          childAspectRatio: .6,
+                          crossAxisSpacing: 3,
+                          mainAxisSpacing: 3,
+                        ),
+                    delegate: SliverChildBuilderDelegate((context, index) {
+                      return Container(
+                        color: Colors.grey[300],
+                        child: CachedNetworkImage(
+                          imageUrl: posts[index].imageUrls[0],
+                          fit: BoxFit.cover,
+                          placeholder: (context, url) =>
+                              const Center(child: CircularProgressIndicator()),
+                          errorWidget: (context, url, error) =>
+                              const Center(child: Icon(Icons.error)),
+                        ),
+                      );
+                    }, childCount: posts.length),
                   ),
-                  delegate: SliverChildBuilderDelegate((context, index) {
-                    return Container(
-                      color: Colors.grey[300],
-                      child: Center(child: Text('Post $index')),
-                    );
-                  }, childCount: 30),
-                ),
+                ] else if (posts == null) ...[
+                  SliverFillRemaining(
+                    child: Center(child: CircularProgressIndicator()),
+                  ),
+                ] else if (posts.isEmpty) ...[
+                  SliverFillRemaining(
+                    child: Center(child: Text('Nothing available')),
+                  ),
+                ],
               ],
             ),
           );

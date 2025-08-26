@@ -6,7 +6,7 @@ class UserModel extends Equatable {
   final String email;
   final List<String>? following;
   final List<String>? followers;
-  final List<String>? posts;
+  final int? postCount;
   final String? photoUrl;
   final String? bio;
 
@@ -17,7 +17,7 @@ class UserModel extends Equatable {
     this.following,
     this.followers,
     this.photoUrl,
-    this.posts,
+    this.postCount,
     this.bio,
   });
 
@@ -29,7 +29,7 @@ class UserModel extends Equatable {
       following: List<String>.from(json['following'] ?? []),
       followers: List<String>.from(json['followers'] ?? []),
       photoUrl: json['photoUrl'],
-      posts: List<String>.from(json['posts'] ?? []),
+      postCount: json['postCount'] ?? 0,
       bio: json['bio'],
     );
   }
@@ -42,7 +42,7 @@ class UserModel extends Equatable {
       'following': following,
       'followers': followers,
       'photoUrl': photoUrl,
-      'posts': posts,
+      'postCount': postCount,
       'bio': bio,
     };
   }
@@ -54,7 +54,7 @@ class UserModel extends Equatable {
     List<String>? following,
     List<String>? followers,
     String? photoUrl,
-    List<String>? posts,
+    int? postCount,
     String? bio,
   }) {
     return UserModel(
@@ -64,18 +64,17 @@ class UserModel extends Equatable {
       following: following ?? this.following,
       followers: followers ?? this.followers,
       photoUrl: photoUrl ?? this.photoUrl,
-      posts: posts ?? this.posts,
+      postCount: postCount ?? this.postCount,
       bio: bio ?? this.bio,
     );
   }
 
   @override
   String toString() {
-    return 'UserModel(uid: $uid, name: $name, email: $email, following: $following, followers: $followers, photoUrl: $photoUrl, posts: $posts, bio: $bio)';
+    return 'UserModel(uid: $uid, name: $name, email: $email, following: $following, followers: $followers, photoUrl: $photoUrl, postCount: $postCount , bio: $bio)';
   }
 
   @override
-  // TODO: implement props
   List<Object?> get props => [
     uid,
     name,
@@ -83,7 +82,7 @@ class UserModel extends Equatable {
     following,
     followers,
     photoUrl,
-    posts,
+    postCount,
     bio,
   ];
 }

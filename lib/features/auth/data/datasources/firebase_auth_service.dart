@@ -7,7 +7,7 @@ import 'package:instagram/core/utils/utils.dart';
 class FirebaseAuthService {
   final FirebaseAuth _auth;
 
-  FirebaseAuthService() : _auth = FirebaseAuth.instance;
+  FirebaseAuthService(this._auth);
 
   Stream<User?> get userChanges => _auth.userChanges();
 
@@ -28,14 +28,9 @@ class FirebaseAuthService {
     }
   }
 
-  Future<UserCredential?> signInWithEmailAndPassword(
-    String email,
-    String password,
-  ) async {
+  Future<void> signInWithEmailAndPassword(String email, String password) async {
     try {
-      final UserCredential userCredential = await _auth
-          .signInWithEmailAndPassword(email: email, password: password);
-      return userCredential;
+      await _auth.signInWithEmailAndPassword(email: email, password: password);
     } on FirebaseAuthException catch (e) {
       throw AuthException(getMessageFromErrorCode(e.code), code: e.code);
     } on SocketException catch (e) {

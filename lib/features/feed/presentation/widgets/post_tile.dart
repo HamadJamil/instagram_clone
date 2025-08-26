@@ -1,4 +1,5 @@
 import 'package:cached_network_image/cached_network_image.dart';
+import 'package:carousel_slider/carousel_slider.dart';
 import 'package:flutter/material.dart';
 import 'package:instagram/features/post/domain/entities/post_model.dart';
 
@@ -35,10 +36,24 @@ class PostTile extends StatelessWidget {
           SizedBox(
             height: 200,
             width: double.infinity,
-            child: CachedNetworkImage(
-              imageUrl: post.imageUrls.first,
-              fit: BoxFit.cover,
-            ),
+            child: post.imageUrls.length == 1
+                ? CachedNetworkImage(
+                    imageUrl: post.imageUrls.first,
+                    fit: BoxFit.cover,
+                  )
+                : CarouselSlider(
+                    items: post.imageUrls.map((url) {
+                      return CachedNetworkImage(
+                        imageUrl: url,
+                        fit: BoxFit.cover,
+                      );
+                    }).toList(),
+                    options: CarouselOptions(
+                      enableInfiniteScroll: false,
+                      aspectRatio: 16 / 9,
+                      viewportFraction: 1,
+                    ),
+                  ),
           ),
           Row(
             mainAxisAlignment: MainAxisAlignment.spaceAround,
@@ -58,7 +73,7 @@ class PostTile extends StatelessWidget {
           Padding(
             padding: const EdgeInsets.symmetric(horizontal: 12.0),
             child: Text(
-              post.caption,
+              post.caption ?? '',
               style: TextStyle(fontSize: 16),
               maxLines: 1,
               overflow: TextOverflow.ellipsis,

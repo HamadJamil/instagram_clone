@@ -5,8 +5,9 @@ import 'package:instagram/features/auth/presentation/pages/forgot_password_page.
 import 'package:instagram/features/auth/presentation/pages/log_in_page.dart';
 import 'package:instagram/features/auth/presentation/pages/sign_up_page.dart';
 import 'package:instagram/features/auth/presentation/pages/splash_screen.dart';
-import 'package:instagram/features/post/presentation/pages/post_page.dart';
-import 'package:instagram/features/profile/home_screen.dart';
+import 'package:instagram/features/post/presentation/pages/post_caption_page.dart';
+import 'package:instagram/features/home_screen.dart';
+import 'package:photo_manager/photo_manager.dart';
 
 class AppRouteConfiguration {
   static final GoRouter route = GoRouter(
@@ -37,14 +38,26 @@ class AppRouteConfiguration {
         builder: (_, __) => const EmailVerificationPage(),
       ),
       GoRoute(
-        path: '/home',
+        path: '/home/:userId',
         name: AppRouteName.home,
-        builder: (_, __) => const HomeScreen(),
+        builder: (_, state) {
+          final String id = state.pathParameters['userId']!;
+          return HomeScreen(userId: id);
+        },
       ),
+
       GoRoute(
-        path: '/createPost',
-        name: AppRouteName.createPost,
-        builder: (_, __) => const PostPage(),
+        path: '/postCaptionPage/:userId',
+        name: AppRouteName.postCaptionPage,
+        builder: (context, state) {
+          final List<AssetEntity> selectedImages =
+              state.extra as List<AssetEntity>;
+          final String userId = state.pathParameters['userId']!;
+          return PostCaptionPage(
+            selectedImages: selectedImages,
+            userId: userId,
+          );
+        },
       ),
     ],
   );

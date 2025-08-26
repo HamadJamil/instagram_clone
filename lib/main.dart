@@ -1,3 +1,5 @@
+import 'package:cloud_firestore/cloud_firestore.dart';
+import 'package:firebase_auth/firebase_auth.dart';
 import 'package:firebase_core/firebase_core.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
@@ -10,9 +12,12 @@ import 'package:instagram/features/auth/data/datasources/firestore_user_service.
 import 'package:instagram/features/auth/data/repositories/auth_repository_implementation.dart';
 import 'package:instagram/features/auth/domain/repositories/auth_repository.dart';
 import 'package:instagram/features/auth/presentation/cubits/auth_cubit.dart';
-import 'package:instagram/features/profile/data/datasources/firebase_user_service.dart';
 import 'package:instagram/features/profile/data/datasources/firestore_profile_service.dart';
 import 'package:instagram/features/profile/domain/repositories/profile_repository.dart';
+import 'package:instagram/features/search/data/datasources/firestore_search_service.dart';
+import 'package:instagram/features/search/data/repositories/search_repository_implementation.dart';
+import 'package:instagram/features/search/domain/repositories/search_repository.dart';
+import 'package:instagram/features/search/presentation/cubits/search_cubit.dart';
 import 'package:instagram/firebase_options.dart';
 
 Future<void> main() async {
@@ -23,19 +28,27 @@ Future<void> main() async {
       options: DefaultFirebaseOptions.currentPlatform,
     );
 
-    final FirebaseAuthService authService = FirebaseAuthService();
-    final FireStoreUserService userService = FireStoreUserService();
-    final FirestoreProfileService profileService = FirestoreProfileService();
-    final FirebaseUserService firebaseUserService = FirebaseUserService();
+    final FirebaseAuth auth = FirebaseAuth.instance;
+    final FirebaseFirestore firestore = FirebaseFirestore.instance;
+
+    final FirebaseAuthService authService = FirebaseAuthService(auth);
+    final FireStoreUserService userService = FireStoreUserService(firestore);
+    final FirestoreSearchService searchService = FirestoreSearchService(
+      firestore,
+    );
+    final FirestoreProfileService profileService = FirestoreProfileService(
+      firestore,
+    );
     final AuthRepository authRepository = AuthRepositoryImplementation(
       authService,
       userService,
     );
     final ProfileRepository profileRepository = ProfileRepositoryImpl(
       profileService: profileService,
-      firebaseUserService: firebaseUserService,
     );
-
+    final SearchRepository searchRepository = SearchRepositoryImplementation(
+      searchService,
+    );
     runApp(
       MultiBlocProvider(
         providers: [
@@ -45,6 +58,10 @@ Future<void> main() async {
           BlocProvider(
             create: (context) =>
                 ProfileCubit(profileRepository: profileRepository),
+          ),
+          BlocProvider(
+            create: (context) =>
+                SearchCubit(searchRepository: searchRepository),
           ),
         ],
         child: const MyApp(),

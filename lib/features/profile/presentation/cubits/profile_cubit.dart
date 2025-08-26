@@ -10,23 +10,31 @@ class ProfileCubit extends Cubit<ProfileState> {
 
   ProfileCubit({required this.profileRepository}) : super(ProfileInitial());
 
-  Future<void> loadProfile() async {
+  Future<void> loadProfile(String userId) async {
     emit(ProfileLoading());
     try {
-      final user = await profileRepository.getUserProfile();
+      final user = await profileRepository.getUserProfile(userId);
       emit(ProfileLoaded(user: user));
+      final posts = await profileRepository.getUserPosts(userId);
+      if (state is ProfileLoaded) {
+        final currentState = state as ProfileLoaded;
+        emit(currentState.copyWith(posts: posts));
+      }
     } catch (e) {
       emit(ProfileError(message: e.toString()));
     }
   }
 
   Future<void> updateProfile(UserModel user) async {
-    emit(ProfileLoading());
-    try {
-      await profileRepository.updateUserProfile(user);
-      emit(ProfileLoaded(user: user));
-    } catch (e) {
-      emit(ProfileError(message: e.toString()));
+    final currentState = state;
+    if (currentState is ProfileLoaded) {
+      emit(ProfileLoading());
+      try {
+        await profileRepository.updateUserProfile(user);
+        emit(currentState.copyWith(user: user));
+      } catch (e) {
+        emit(ProfileError(message: e.toString()));
+      }
     }
   }
 

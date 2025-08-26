@@ -1,4 +1,7 @@
+import 'dart:io';
+
 import 'package:flutter/material.dart';
+import 'package:photo_manager/photo_manager.dart';
 
 void showErrorSnackbar(
   BuildContext context,
@@ -31,4 +34,17 @@ String getMessageFromErrorCode(String code) {
     default:
       return 'Unknown error';
   }
+}
+
+Future<List<File>> convertAssetEntityListToFileList(
+  List<AssetEntity> assetEntities,
+) async {
+  List<File> fileList = [];
+  for (AssetEntity assetEntity in assetEntities) {
+    File? file = await assetEntity.file;
+    if (file != null) {
+      fileList.add(file);
+    }
+  }
+  return fileList;
 }

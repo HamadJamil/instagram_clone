@@ -50,7 +50,11 @@ class _SplashScreenState extends State<SplashScreen> {
 
   void _handleAuthState(AuthState authState) {
     if (authState is AuthSuccess && authState.isEmailVerified) {
-      return context.goNamed(AppRouteName.home);
+      final String? userId = authState.userId;
+      return context.goNamed(
+        AppRouteName.home,
+        pathParameters: {'userId': userId!},
+      );
     } else if (authState is AuthSuccess && !authState.isEmailVerified) {
       return context.goNamed(AppRouteName.emailVerification);
     } else if (authState is AuthInitial) {

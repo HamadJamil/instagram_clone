@@ -18,7 +18,9 @@ class AuthCubit extends Cubit<AuthState> {
       if (user == null) {
         emit(AuthInitial());
       } else {
-        emit(AuthSuccess(isEmailVerified: user.emailVerified));
+        emit(
+          AuthSuccess(isEmailVerified: user.emailVerified, userId: user.uid),
+        );
       }
     });
   }

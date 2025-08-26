@@ -12,8 +12,9 @@ class AuthInitial extends AuthState {}
 class AuthLoading extends AuthState {}
 
 class AuthSuccess extends AuthState {
+  final String? userId;
   final bool isEmailVerified;
-  const AuthSuccess({this.isEmailVerified = false});
+  const AuthSuccess({this.userId, this.isEmailVerified = false});
 
   @override
   List<Object> get props => [isEmailVerified];

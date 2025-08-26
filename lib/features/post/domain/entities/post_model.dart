@@ -3,27 +3,27 @@ import 'package:equatable/equatable.dart';
 class PostModel extends Equatable {
   final String id;
   final String userId;
-  final String caption;
+  final String? caption;
   final List<String> imageUrls;
-  final int likes;
-  final int comments;
+  final int? likes;
+  final int? comments;
   final DateTime createdAt;
 
   const PostModel({
     required this.imageUrls,
-    required this.likes,
-    required this.comments,
+    this.likes,
+    this.comments,
     required this.id,
     required this.userId,
-    required this.caption,
+    this.caption,
     required this.createdAt,
   });
 
   factory PostModel.fromJson(Map<String, dynamic> json) {
     return PostModel(
       imageUrls: List<String>.from(json['imageUrls'] ?? []),
-      likes: json['likes'] as int,
-      comments: json['comments'] as int,
+      likes: json['likes'] ?? 0,
+      comments: json['comments'] ?? 0,
       id: json['id'] as String,
       userId: json['userId'] as String,
       caption: json['caption'] as String,

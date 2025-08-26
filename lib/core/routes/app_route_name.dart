@@ -9,5 +9,6 @@ class AppRouteName {
   static const String home = 'home';
   static const String profile = 'profile';
   static const String createPost = 'createPost';
+  static const String postCaptionPage = 'postCaptionPage';
   static const String feedScreen = 'feedScreen';
 }
