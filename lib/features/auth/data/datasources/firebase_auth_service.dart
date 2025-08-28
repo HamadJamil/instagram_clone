@@ -1,7 +1,7 @@
 import 'dart:io';
 
 import 'package:firebase_auth/firebase_auth.dart';
-import 'package:instagram/core/utils/exception.dart';
+import 'package:instagram/core/utils/exceptions.dart';
 import 'package:instagram/core/utils/utils.dart';
 
 class FirebaseAuthService {

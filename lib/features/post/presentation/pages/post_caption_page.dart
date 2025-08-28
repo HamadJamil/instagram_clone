@@ -1,16 +1,19 @@
 import 'dart:io';
 
 import 'package:carousel_slider/carousel_slider.dart';
+import 'package:cloud_firestore/cloud_firestore.dart';
+import 'package:firebase_storage/firebase_storage.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
+import 'package:go_router/go_router.dart';
+import 'package:instagram/core/repository/post_repository.dart';
+import 'package:instagram/core/repository/strorage_repository.dart';
+import 'package:instagram/core/routes/app_route_name.dart';
 import 'package:instagram/core/utils/utils.dart';
 import 'package:instagram/core/widgets/cutom_text_form_field.dart';
-import 'package:instagram/features/post/data/datasources/firestore_post_service.dart';
-import 'package:instagram/features/post/data/repositories/firestore_post_repository_implementation.dart';
-import 'package:instagram/features/post/domain/entities/post_model.dart';
+import 'package:instagram/core/models/post_model.dart';
 import 'package:instagram/features/post/presentation/cubits/post_cubit.dart';
 import 'package:instagram/features/post/presentation/cubits/post_state.dart';
-import 'package:instagram/features/feed/presentation/pages/feed_page.dart';
 import 'package:photo_manager/photo_manager.dart';
 import 'package:photo_view/photo_view.dart';
 
@@ -18,6 +21,7 @@ import 'package:photo_view/photo_view.dart';
 // Need to fix Post Cubit Dependency
 // Show Success & Error Snackbar
 // Clear Selection Image after Posted(Implement this Function In PostCubit)
+// For time Bieng getting user directly from the state
 
 class PostCaptionPage extends StatefulWidget {
   const PostCaptionPage({
@@ -72,19 +76,18 @@ class _PostCaptionPageState extends State<PostCaptionPage> {
       ),
       body: BlocProvider(
         create: (context) => PostCubit(
-          postRepository: FirestorePostRepositoryImplementation(
-            FirestorePostService(),
-          ),
+          PostRepository(FirebaseFirestore.instance),
+          StorageRepository(FirebaseStorage.instance),
         ),
         child: BlocListener<PostCubit, PostPageState>(
           listener: (context, state) {
             if (state is PostPagePostCreated) {
               ScaffoldMessenger.of(context).showSnackBar(
-                const SnackBar(content: Text('Post Created Successfully')),
+                const SnackBar(content: Text('Posted Successfully')),
               );
-              // Need to change to Go Router
-              Navigator.of(context).pushReplacement(
-                MaterialPageRoute(builder: (context) => FeedPage()),
+              context.goNamed(
+                AppRouteName.home,
+                pathParameters: {'userId': widget.userId},
               );
             } else if (state is PostPageError) {
               ScaffoldMessenger.of(context).showSnackBar(
@@ -139,7 +142,10 @@ class _PostCaptionPageState extends State<PostCaptionPage> {
                           caption: _controller.text,
                           createdAt: DateTime.now(),
                         );
-                        context.read<PostCubit>().createPost(postModel);
+                        context.read<PostCubit>().createPost(
+                          postModel,
+                          _selectedImageFiles,
+                        );
                       },
                       child: state is PostPageLoading
                           ? const CircularProgressIndicator()

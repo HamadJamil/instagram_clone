@@ -48,7 +48,7 @@ class _ForgotPasswordPageState extends State<ForgotPasswordPage> {
           body: Container(
             height: MediaQuery.of(context).size.height,
             width: double.infinity,
-            padding: const EdgeInsets.only(left: 15, right: 15, top: 80),
+            padding: const EdgeInsets.only(left: 16, right: 16, top: 80),
             child: Column(
               mainAxisAlignment: MainAxisAlignment.start,
               crossAxisAlignment: CrossAxisAlignment.center,
@@ -57,7 +57,7 @@ class _ForgotPasswordPageState extends State<ForgotPasswordPage> {
                   TextSpan(
                     text: 'Forgot Password?',
                     style: const TextStyle(
-                      fontSize: 50,
+                      fontSize: 52,
                       fontWeight: FontWeight.bold,
                     ),
                     children: [
@@ -73,7 +73,7 @@ class _ForgotPasswordPageState extends State<ForgotPasswordPage> {
                     ],
                   ),
                 ),
-                SizedBox(height: 10),
+                SizedBox(height: 12),
                 if (!isEmailSent) ...[
                   Form(
                     key: _formKey,
@@ -92,7 +92,7 @@ class _ForgotPasswordPageState extends State<ForgotPasswordPage> {
                       },
                     ),
                   ),
-                  const SizedBox(height: 15),
+                  const SizedBox(height: 16),
                   FilledButton(
                     onPressed: isLoading ? null : () => _sendResetEmail(),
                     child: isLoading
@@ -105,12 +105,12 @@ class _ForgotPasswordPageState extends State<ForgotPasswordPage> {
                     decoration: BoxDecoration(
                       color: Colors.green.withValues(alpha: 0.1),
                       border: Border.all(color: Colors.green),
-                      borderRadius: BorderRadius.circular(10),
+                      borderRadius: BorderRadius.circular(12),
                     ),
-                    child: Row(
-                      children: const [
-                        Icon(Icons.check_circle, color: Colors.green, size: 30),
-                        SizedBox(width: 15),
+                    child: const Row(
+                      children: [
+                        Icon(Icons.check_circle, color: Colors.green, size: 32),
+                        SizedBox(width: 16),
                         Expanded(
                           child: Column(
                             crossAxisAlignment: CrossAxisAlignment.start,
@@ -119,13 +119,13 @@ class _ForgotPasswordPageState extends State<ForgotPasswordPage> {
                                 'Email Sent!',
                                 style: TextStyle(
                                   color: Colors.green,
-                                  fontSize: 18,
+                                  fontSize: 16,
                                   fontWeight: FontWeight.bold,
                                 ),
                               ),
                               Text(
                                 'Check your email for the password reset link.',
-                                style: TextStyle(fontSize: 14),
+                                style: TextStyle(fontSize: 12),
                               ),
                             ],
                           ),
@@ -133,15 +133,15 @@ class _ForgotPasswordPageState extends State<ForgotPasswordPage> {
                       ],
                     ),
                   ),
-                  const SizedBox(height: 10),
+                  const SizedBox(height: 12),
                   Align(
                     alignment: Alignment.centerLeft,
                     child: const Text(
                       'Didn\'t receive the email?',
-                      style: TextStyle(fontSize: 14),
+                      style: TextStyle(fontSize: 12),
                     ),
                   ),
-                  const SizedBox(height: 15),
+                  const SizedBox(height: 16),
                   OutlinedButton(
                     onPressed: isLoading ? null : () => _sendResetEmail(),
                     child: isLoading
@@ -158,7 +158,7 @@ class _ForgotPasswordPageState extends State<ForgotPasswordPage> {
                       },
                       child: const Text(
                         'Back to Login',
-                        style: TextStyle(fontSize: 14),
+                        style: TextStyle(fontSize: 16),
                       ),
                     ),
                   ),

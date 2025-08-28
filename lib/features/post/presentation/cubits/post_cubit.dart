@@ -1,17 +1,24 @@
+import 'dart:io';
+
 import 'package:flutter_bloc/flutter_bloc.dart';
-import 'package:instagram/features/post/domain/entities/post_model.dart';
-import 'package:instagram/features/post/domain/repositories/firestore_post_repository.dart';
+import 'package:instagram/core/models/post_model.dart';
+import 'package:instagram/core/repository/post_repository.dart';
+import 'package:instagram/core/repository/strorage_repository.dart';
+import 'package:instagram/core/utils/utils.dart';
 import 'package:instagram/features/post/presentation/cubits/post_state.dart';
 import 'package:photo_manager/photo_manager.dart';
 
 class PostCubit extends Cubit<PostPageState> {
-  final FirestorePostRepository postRepository;
-  PostCubit({required this.postRepository}) : super(PostPageInitial());
+  final PostRepository postRepository;
+  final StorageRepository storageRepository;
+  PostCubit(this.postRepository, this.storageRepository)
+    : super(PostPageInitial());
 
-  void createPost(PostModel post) async {
+  void createPost(PostModel post, List<File> images) async {
     emit(PostPageLoading());
     try {
-      await postRepository.createPost(post);
+      final imageUrls = await storageRepository.postImages(images);
+      await postRepository.create(post.copyWith(imageUrls: imageUrls));
       emit(PostPagePostCreated());
     } catch (error) {
       emit(PostPageError(error.toString()));
@@ -20,9 +27,8 @@ class PostCubit extends Cubit<PostPageState> {
 
   void loadPosts() async {
     try {
-      final PermissionState result =
-          await PhotoManager.requestPermissionExtend();
-      if (!result.isAuth) {
+      final result = await checkAndRequestGalleryPermission();
+      if (!result) {
         emit(PostPagePermissionRequestDenied());
         return;
       }

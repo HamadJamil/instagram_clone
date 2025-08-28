@@ -10,6 +10,7 @@ import 'package:instagram/features/home_screen.dart';
 import 'package:photo_manager/photo_manager.dart';
 
 class AppRouteConfiguration {
+  AppRouteConfiguration._();
   static final GoRouter route = GoRouter(
     routes: [
       GoRoute(
@@ -45,7 +46,6 @@ class AppRouteConfiguration {
           return HomeScreen(userId: id);
         },
       ),
-
       GoRoute(
         path: '/postCaptionPage/:userId',
         name: AppRouteName.postCaptionPage,

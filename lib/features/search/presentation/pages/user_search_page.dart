@@ -2,8 +2,8 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:flutter_spinkit/flutter_spinkit.dart';
+import 'package:instagram/core/models/user_model.dart';
 import 'package:instagram/core/theme/app_colors.dart';
-import 'package:instagram/features/auth/domain/entities/user_model.dart';
 import 'package:instagram/features/search/presentation/cubits/search_cubit.dart';
 import 'package:instagram/features/search/presentation/cubits/search_state.dart';
 
@@ -77,7 +77,7 @@ class _UserSearchPageState extends State<UserSearchPage> {
               child: Column(
                 mainAxisAlignment: MainAxisAlignment.center,
                 children: [
-                  SpinKitChasingDots(color: AppColors.primary, size: 30),
+                  SpinKitChasingDots(color: AppColors.primary, size: 32),
                   SizedBox(height: 16),
                   Text('Searching...'),
                 ],

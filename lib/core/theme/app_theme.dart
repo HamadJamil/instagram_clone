@@ -2,6 +2,7 @@ import 'package:flutter/material.dart';
 import 'app_colors.dart';
 
 class AppTheme {
+  AppTheme._();
   static final ThemeData light = ThemeData(
     scaffoldBackgroundColor: AppColors.surfaceLight,
     useMaterial3: true,
@@ -31,11 +32,11 @@ class AppTheme {
 
     filledButtonTheme: FilledButtonThemeData(
       style: ElevatedButton.styleFrom(
-        minimumSize: const Size(double.infinity, 55),
+        minimumSize: const Size(double.infinity, 48),
         backgroundColor: AppColors.primary,
         foregroundColor: AppColors.white,
-        padding: EdgeInsets.symmetric(horizontal: 16.0, vertical: 12.0),
-        shape: RoundedRectangleBorder(
+        padding: const EdgeInsets.symmetric(horizontal: 16.0, vertical: 12.0),
+        shape: const RoundedRectangleBorder(
           borderRadius: BorderRadius.all(Radius.circular(20.0)),
         ),
       ),
@@ -49,12 +50,12 @@ class AppTheme {
 
     outlinedButtonTheme: OutlinedButtonThemeData(
       style: OutlinedButton.styleFrom(
-        minimumSize: const Size(double.infinity, 55),
+        minimumSize: const Size(double.infinity, 48),
         side: BorderSide(color: AppColors.primary),
         backgroundColor: Colors.transparent,
         foregroundColor: AppColors.primary,
-        padding: EdgeInsets.symmetric(horizontal: 16.0),
-        shape: RoundedRectangleBorder(
+        padding: const EdgeInsets.symmetric(horizontal: 16.0),
+        shape: const RoundedRectangleBorder(
           borderRadius: BorderRadius.all(Radius.circular(20.0)),
         ),
       ),
@@ -69,12 +70,22 @@ class AppTheme {
       elevation: 2,
     ),
 
-    floatingActionButtonTheme: FloatingActionButtonThemeData(
-      backgroundColor: AppColors.surfaceLight,
-      foregroundColor: AppColors.black,
-      shape: RoundedRectangleBorder(
-        side: BorderSide(color: AppColors.black, width: 2),
-        borderRadius: BorderRadius.all(Radius.circular(16.0)),
+    elevatedButtonTheme: ElevatedButtonThemeData(
+      style: ElevatedButton.styleFrom(
+        minimumSize: const Size(double.infinity, 48),
+        backgroundColor: AppColors.white,
+        foregroundColor: AppColors.black,
+        shape: const RoundedRectangleBorder(
+          borderRadius: BorderRadius.all(Radius.circular(12.0)),
+        ),
+      ),
+    ),
+
+    bottomSheetTheme: BottomSheetThemeData(
+      backgroundColor: AppColors.grey300,
+      modalBackgroundColor: AppColors.grey300,
+      shape: const RoundedRectangleBorder(
+        borderRadius: BorderRadius.vertical(top: Radius.circular(20.0)),
       ),
     ),
 
@@ -83,7 +94,6 @@ class AppTheme {
 
   static final ThemeData dark = ThemeData(
     scaffoldBackgroundColor: AppColors.surfaceDark,
-
     useMaterial3: true,
     appBarTheme: AppBarTheme(
       backgroundColor: AppColors.surfaceDark,
@@ -106,12 +116,23 @@ class AppTheme {
       selectedItemColor: AppColors.white,
       unselectedItemColor: AppColors.white,
     ),
-    floatingActionButtonTheme: FloatingActionButtonThemeData(
-      backgroundColor: AppColors.surfaceDark,
-      foregroundColor: AppColors.white,
-      shape: RoundedRectangleBorder(
-        side: BorderSide(color: AppColors.white, width: 2),
-        borderRadius: BorderRadius.all(Radius.circular(16.0)),
+
+    elevatedButtonTheme: ElevatedButtonThemeData(
+      style: ElevatedButton.styleFrom(
+        minimumSize: const Size(double.infinity, 48),
+        backgroundColor: AppColors.grey600,
+        foregroundColor: AppColors.white,
+        shape: const RoundedRectangleBorder(
+          borderRadius: BorderRadius.all(Radius.circular(12.0)),
+        ),
+      ),
+    ),
+
+    bottomSheetTheme: BottomSheetThemeData(
+      backgroundColor: AppColors.grey900,
+      modalBackgroundColor: AppColors.grey900,
+      shape: const RoundedRectangleBorder(
+        borderRadius: BorderRadius.vertical(top: Radius.circular(20.0)),
       ),
     ),
 

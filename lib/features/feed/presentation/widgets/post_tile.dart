@@ -1,7 +1,7 @@
 import 'package:cached_network_image/cached_network_image.dart';
 import 'package:carousel_slider/carousel_slider.dart';
 import 'package:flutter/material.dart';
-import 'package:instagram/features/post/domain/entities/post_model.dart';
+import 'package:instagram/core/models/post_model.dart';
 
 class PostTile extends StatelessWidget {
   const PostTile({super.key, required this.post});

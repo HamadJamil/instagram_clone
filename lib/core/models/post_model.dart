@@ -1,3 +1,4 @@
+import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:equatable/equatable.dart';
 
 class PostModel extends Equatable {
@@ -25,9 +26,11 @@ class PostModel extends Equatable {
       likes: json['likes'] ?? 0,
       comments: json['comments'] ?? 0,
       id: json['id'] as String,
-      userId: json['userId'] as String,
-      caption: json['caption'] as String,
-      createdAt: DateTime.parse(json['createdAt'] as String),
+      userId: json['userId'] ?? '',
+      caption: json['caption'] ?? '',
+      createdAt: json['createdAt'] != null
+          ? (json['createdAt']).toDate()
+          : DateTime.now(),
     );
   }
 
@@ -36,7 +39,7 @@ class PostModel extends Equatable {
       'id': id,
       'userId': userId,
       'caption': caption,
-      'createdAt': createdAt.toIso8601String(),
+      'createdAt': Timestamp.fromDate(createdAt),
       'imageUrls': imageUrls,
       'likes': likes,
       'comments': comments,
@@ -65,7 +68,7 @@ class PostModel extends Equatable {
 
   @override
   String toString() {
-    return 'PostModel(id: $id, userId: $userId, caption: $caption, createdAt: $createdAt, imageUrls: $imageUrls, likes: $likes, comments: $comments)';
+    return 'PostModel(id: $id, authorId: $userId, caption: $caption, createdAt: $createdAt, imageUrls: $imageUrls, likes: $likes, comments: $comments)';
   }
 
   @override

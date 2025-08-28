@@ -1,18 +1,15 @@
 import 'package:firebase_auth/firebase_auth.dart';
-import 'package:instagram/core/utils/exception.dart';
+import 'package:instagram/core/models/user_model.dart';
+import 'package:instagram/core/repository/user_repository.dart';
+import 'package:instagram/core/utils/exceptions.dart';
 import 'package:instagram/features/auth/data/datasources/firebase_auth_service.dart';
-import 'package:instagram/features/auth/data/datasources/firestore_user_service.dart';
-import 'package:instagram/features/auth/domain/entities/user_model.dart';
 import 'package:instagram/features/auth/domain/repositories/auth_repository.dart';
 
 class AuthRepositoryImplementation implements AuthRepository {
   final FirebaseAuthService _firebaseAuthService;
-  final FireStoreUserService _fireStoreUserService;
+  final UserRepository _userRepository;
 
-  AuthRepositoryImplementation(
-    this._firebaseAuthService,
-    this._fireStoreUserService,
-  );
+  AuthRepositoryImplementation(this._firebaseAuthService, this._userRepository);
 
   @override
   Stream<User?> get userChanges => _firebaseAuthService.userChanges;
@@ -43,7 +40,7 @@ class AuthRepositoryImplementation implements AuthRepository {
         name: userName,
       );
       if (user != null) {
-        await _fireStoreUserService.createUser(userModel);
+        await _userRepository.create(userModel);
       }
     } on AuthException {
       rethrow;

@@ -1,6 +1,6 @@
 import 'package:equatable/equatable.dart';
-import 'package:instagram/features/auth/domain/entities/user_model.dart';
-import 'package:instagram/features/post/domain/entities/post_model.dart';
+import 'package:instagram/core/models/post_model.dart';
+import 'package:instagram/core/models/user_model.dart';
 
 abstract class ProfileState extends Equatable {
   @override

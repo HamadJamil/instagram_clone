@@ -2,6 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:flutter_spinkit/flutter_spinkit.dart';
 import 'package:go_router/go_router.dart';
+import 'package:instagram/core/constants/app_images.dart';
 import 'package:instagram/core/routes/app_route_name.dart';
 import 'package:instagram/core/theme/app_colors.dart';
 import 'package:instagram/core/widgets/custom_password_field.dart';
@@ -63,7 +64,7 @@ class _SignUpPageState extends State<SignUpPage> {
                 children: [
                   const SizedBox(height: 140),
                   const Image(
-                    image: AssetImage('assets/images/instagram.png'),
+                    image: AssetImage(AppImages.logo),
                     height: 80.0,
                     width: 80.0,
                   ),
@@ -79,7 +80,7 @@ class _SignUpPageState extends State<SignUpPage> {
                       return null;
                     },
                   ),
-                  const SizedBox(height: 10.0),
+                  const SizedBox(height: 12.0),
                   CustomTextFormField(
                     label: 'Email',
                     textController: _emailController,
@@ -94,7 +95,7 @@ class _SignUpPageState extends State<SignUpPage> {
                       return null;
                     },
                   ),
-                  const SizedBox(height: 10.0),
+                  const SizedBox(height: 12.0),
                   CustomPasswordField(
                     label: 'Password',
                     textController: _passwordController,
@@ -108,7 +109,7 @@ class _SignUpPageState extends State<SignUpPage> {
                       return null;
                     },
                   ),
-                  const SizedBox(height: 15.0),
+                  const SizedBox(height: 16.0),
                   BlocBuilder<AuthCubit, AuthState>(
                     builder: (context, state) {
                       return SizedBox(
@@ -139,7 +140,7 @@ class _SignUpPageState extends State<SignUpPage> {
                           'I already have an account',
                           style: TextStyle(
                             color: Theme.of(context).colorScheme.primary,
-                            fontSize: 15.0,
+                            fontSize: 16.0,
                             fontWeight: FontWeight.w500,
                           ),
                         ),

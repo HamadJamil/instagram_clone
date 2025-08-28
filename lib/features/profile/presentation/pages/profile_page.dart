@@ -19,7 +19,7 @@ class _ProfilePageState extends State<ProfilePage> {
   @override
   void initState() {
     super.initState();
-    context.read<ProfileCubit>().loadProfile(widget.userId);
+    context.read<ProfileCubit>().load(widget.userId);
   }
 
   @override
@@ -72,26 +72,17 @@ class _ProfilePageState extends State<ProfilePage> {
                       children: [
                         SizedBox(
                           width: double.infinity,
-                          height: 70,
+                          height: 72,
                           child: Row(
                             children: [
-                              Stack(
-                                children: [
-                                  CircleAvatar(
-                                    radius: 37,
-                                    backgroundImage: user.photoUrl != null
-                                        ? NetworkImage(user.photoUrl!)
-                                        : null,
-                                    child: user.photoUrl == null
-                                        ? Icon(Icons.person)
-                                        : null,
-                                  ),
-                                  Positioned(
-                                    right: 0,
-                                    bottom: 0,
-                                    child: Icon(Icons.add_circle, size: 30),
-                                  ),
-                                ],
+                              CircleAvatar(
+                                radius: 36,
+                                backgroundImage: user.photoUrl != null
+                                    ? NetworkImage(user.photoUrl!)
+                                    : null,
+                                child: user.photoUrl == null
+                                    ? Icon(Icons.person)
+                                    : null,
                               ),
                               const SizedBox(width: 16.0),
                               Column(
@@ -135,7 +126,6 @@ class _ProfilePageState extends State<ProfilePage> {
                         Text(
                           user.bio ?? 'No bio available',
                           style: const TextStyle(fontWeight: FontWeight.w400),
-                          textAlign: TextAlign.center,
                         ),
                         const SizedBox(height: 16.0),
                         OutlinedButton(
@@ -214,7 +204,7 @@ class _ProfilePageState extends State<ProfilePage> {
           value,
           style: const TextStyle(fontWeight: FontWeight.bold, fontSize: 16),
         ),
-        Text(label, style: const TextStyle(fontSize: 14)),
+        Text(label, style: const TextStyle(fontSize: 16)),
       ],
     );
   }

@@ -1,13 +1,35 @@
 import 'package:cloud_firestore/cloud_firestore.dart';
-import 'package:instagram/features/auth/domain/entities/user_model.dart';
-import 'package:instagram/features/post/domain/entities/post_model.dart';
+import 'package:instagram/core/models/user_model.dart';
+import 'package:instagram/core/utils/exceptions.dart';
 
-class FirestoreProfileService {
+class UserRepository {
   final FirebaseFirestore _firestore;
 
-  FirestoreProfileService(this._firestore);
+  UserRepository(this._firestore);
 
-  Future<UserModel> getUserProfile(String userId) async {
+  Future<void> create(UserModel user) async {
+    try {
+      await _firestore.collection('users').doc(user.uid).set(user.toJson());
+    } on Exception catch (e) {
+      throw FirestoreException(
+        'FirestoreUserService: Failed to create user: ${e.toString()}',
+      );
+    }
+  }
+
+  Future<void> update(UserModel user) async {
+    try {
+      await _firestore.collection('users').doc(user.uid).update({
+        'name': user.name,
+        'bio': user.bio,
+        'photoUrl': user.photoUrl,
+      });
+    } catch (e) {
+      throw Exception('FirestoreProfileService :Failed to update profile: $e');
+    }
+  }
+
+  Future<UserModel> get(String userId) async {
     try {
       final doc = await _firestore.collection('users').doc(userId).get();
       if (!doc.exists) {
@@ -21,33 +43,26 @@ class FirestoreProfileService {
     }
   }
 
-  Future<void> updateUserProfile(UserModel user) async {
+  Future<List<UserModel>> search(String query, String userId) async {
     try {
-      await _firestore.collection('users').doc(user.uid).update({
-        'name': user.name,
-        'bio': user.bio,
-        'photoUrl': user.photoUrl,
-      });
-    } catch (e) {
-      throw Exception('FirestoreProfileService :Failed to update profile: $e');
-    }
-  }
-
-  Future<List<PostModel>> getUserPosts(String userId) async {
-    try {
-      final querySnapshot = await _firestore
-          .collection('posts')
-          .where('userId', isEqualTo: userId)
-          .get();
-      return querySnapshot.docs
-          .map((doc) => PostModel.fromJson(doc.data()))
+      final snapshot = await _firestore.collection('users').limit(100).get();
+      final user = snapshot.docs
+          .where((doc) {
+            final data = doc.data();
+            return data['name'].toString().toLowerCase().contains(
+                  query.toLowerCase(),
+                ) &&
+                userId != doc.id;
+          })
+          .map((doc) => UserModel.fromJson(doc.data()))
           .toList();
+      return user;
     } catch (e) {
-      throw Exception('FirestoreProfileService :Failed to get user posts: $e');
+      throw Exception('FirestoreSearchService: Failed to search users: $e');
     }
   }
 
-  Future<void> followUser(String userId, String targetUserId) async {
+  Future<void> follow(String userId, String targetUserId) async {
     try {
       final batch = _firestore.batch();
       final currentUserRef = _firestore.collection('users').doc(userId);
@@ -64,7 +79,7 @@ class FirestoreProfileService {
     }
   }
 
-  Future<void> unfollowUser(String userId, String targetUserId) async {
+  Future<void> unfollow(String userId, String targetUserId) async {
     try {
       final batch = _firestore.batch();
       final currentUserRef = _firestore.collection('users').doc(userId);

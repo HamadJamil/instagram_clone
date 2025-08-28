@@ -26,7 +26,10 @@ class DefaultFirebaseOptions {
       case TargetPlatform.android:
         return android;
       case TargetPlatform.iOS:
-        return ios;
+        throw UnsupportedError(
+          'DefaultFirebaseOptions have not been configured for ios - '
+          'you can reconfigure this by running the FlutterFire CLI again.',
+        );
       case TargetPlatform.macOS:
         throw UnsupportedError(
           'DefaultFirebaseOptions have not been configured for macos - '
@@ -50,20 +53,10 @@ class DefaultFirebaseOptions {
   }
 
   static const FirebaseOptions android = FirebaseOptions(
-    apiKey: 'AIzaSyDPV77Z2gTYrnEjU0-fK9B46JOAJ5GFoNw',
-    appId: '1:742200901476:android:814ad44ad8a1a52d728471',
-    messagingSenderId: '742200901476',
-    projectId: 'instagram-clone-dc11d',
-    storageBucket: 'instagram-clone-dc11d.firebasestorage.app',
-  );
-
-  static const FirebaseOptions ios = FirebaseOptions(
-    apiKey: 'AIzaSyBg-huNqhHckr__gnIULomBBDrewxIUqmg',
-    appId: '1:742200901476:ios:b9e01dac016a0843728471',
-    messagingSenderId: '742200901476',
-    projectId: 'instagram-clone-dc11d',
-    storageBucket: 'instagram-clone-dc11d.firebasestorage.app',
-    iosClientId: '742200901476-1kkb48b6ro5jmtbr4t29bim7k7q8i3qb.apps.googleusercontent.com',
-    iosBundleId: 'com.example.instagram',
+    apiKey: 'AIzaSyBdH568T-9qTL-yoncTgpq7UMefmQ-zEdE',
+    appId: '1:1040277571324:android:ff836a069a7cfec0e27979',
+    messagingSenderId: '1040277571324',
+    projectId: 'insta-clone-637c5',
+    storageBucket: 'insta-clone-637c5.firebasestorage.app',
   );
 }

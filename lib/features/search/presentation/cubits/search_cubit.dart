@@ -1,14 +1,14 @@
 import 'dart:async';
 
 import 'package:flutter_bloc/flutter_bloc.dart';
-import 'package:instagram/features/search/domain/repositories/search_repository.dart';
+import 'package:instagram/core/repository/user_repository.dart';
 import 'package:instagram/features/search/presentation/cubits/search_state.dart';
 
 class SearchCubit extends Cubit<SearchState> {
-  final SearchRepository searchRepository;
+  final UserRepository _userRepository;
   Timer? _requestTimer;
 
-  SearchCubit({required this.searchRepository}) : super(SearchInitial());
+  SearchCubit(this._userRepository) : super(SearchInitial());
 
   void searchUsers(String query, String userId) {
     _requestTimer?.cancel();
@@ -20,7 +20,7 @@ class SearchCubit extends Cubit<SearchState> {
     emit(SearchLoading());
     _requestTimer = Timer(const Duration(milliseconds: 500), () async {
       try {
-        final users = await searchRepository.searchUsers(query, userId);
+        final users = await _userRepository.search(query, userId);
         emit(SearchLoaded(users: users, query: query));
       } catch (e) {
         emit(SearchError(message: 'Failed to search: $e'));

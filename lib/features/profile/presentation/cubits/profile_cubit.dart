@@ -1,21 +1,30 @@
 import 'dart:async';
+import 'dart:io';
 
 import 'package:flutter_bloc/flutter_bloc.dart';
-import 'package:instagram/features/profile/domain/repositories/profile_repository.dart';
+import 'package:instagram/core/models/user_model.dart';
+import 'package:instagram/core/repository/post_repository.dart';
+import 'package:instagram/core/repository/strorage_repository.dart';
+import 'package:instagram/core/repository/user_repository.dart';
 import 'package:instagram/features/profile/presentation/cubits/profile_state.dart';
-import 'package:instagram/features/auth/domain/entities/user_model.dart';
 
 class ProfileCubit extends Cubit<ProfileState> {
-  final ProfileRepository profileRepository;
+  final UserRepository _userRepository;
+  final PostRepository _postRepository;
+  final StorageRepository _storageRepository;
 
-  ProfileCubit({required this.profileRepository}) : super(ProfileInitial());
+  ProfileCubit(
+    this._userRepository,
+    this._postRepository,
+    this._storageRepository,
+  ) : super(ProfileInitial());
 
-  Future<void> loadProfile(String userId) async {
+  Future<void> load(String userId) async {
     emit(ProfileLoading());
     try {
-      final user = await profileRepository.getUserProfile(userId);
+      final user = await _userRepository.get(userId);
       emit(ProfileLoaded(user: user));
-      final posts = await profileRepository.getUserPosts(userId);
+      final posts = await _postRepository.getUserPosts(userId);
       if (state is ProfileLoaded) {
         final currentState = state as ProfileLoaded;
         emit(currentState.copyWith(posts: posts));
@@ -25,15 +34,27 @@ class ProfileCubit extends Cubit<ProfileState> {
     }
   }
 
-  Future<void> updateProfile(UserModel user) async {
+  Future<void> update({UserModel? user, File? profilePhoto}) async {
     final currentState = state;
     if (currentState is ProfileLoaded) {
       emit(ProfileLoading());
+
       try {
-        await profileRepository.updateUserProfile(user);
-        emit(currentState.copyWith(user: user));
+        UserModel updatedUser = user ?? currentState.user;
+
+        if (profilePhoto != null) {
+          final imageUrl = await _storageRepository.uploadProfilePhoto(
+            profilePhoto,
+          );
+          updatedUser = updatedUser.copyWith(photoUrl: imageUrl);
+        }
+
+        await _userRepository.update(updatedUser);
+
+        emit(currentState.copyWith(user: updatedUser));
       } catch (e) {
         emit(ProfileError(message: e.toString()));
+        emit(currentState);
       }
     }
   }

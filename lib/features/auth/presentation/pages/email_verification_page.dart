@@ -27,7 +27,7 @@ class EmailVerificationPage extends StatelessWidget {
           body: Container(
             height: size.height,
             width: size.width,
-            padding: const EdgeInsets.only(left: 15, right: 15, top: 80),
+            padding: const EdgeInsets.only(left: 16, right: 16, top: 80),
             child: Column(
               mainAxisAlignment: MainAxisAlignment.start,
               crossAxisAlignment: CrossAxisAlignment.start,
@@ -35,7 +35,7 @@ class EmailVerificationPage extends StatelessWidget {
                 const Text.rich(
                   TextSpan(
                     text: 'Verify Email',
-                    style: TextStyle(fontSize: 50, fontWeight: FontWeight.bold),
+                    style: TextStyle(fontSize: 52, fontWeight: FontWeight.bold),
                     children: [
                       TextSpan(
                         text: '\nCheck your email for verification link',
@@ -53,16 +53,16 @@ class EmailVerificationPage extends StatelessWidget {
                   decoration: BoxDecoration(
                     color: Colors.green.withValues(alpha: 0.1),
                     border: Border.all(color: Colors.green),
-                    borderRadius: BorderRadius.circular(10),
+                    borderRadius: BorderRadius.circular(12),
                   ),
                   child: const Row(
                     children: [
                       Icon(
                         Icons.mark_email_unread_outlined,
                         color: Colors.green,
-                        size: 30,
+                        size: 32,
                       ),
-                      SizedBox(width: 15),
+                      SizedBox(width: 16),
                       Expanded(
                         child: Column(
                           crossAxisAlignment: CrossAxisAlignment.start,
@@ -71,13 +71,13 @@ class EmailVerificationPage extends StatelessWidget {
                               'Email Sent!',
                               style: TextStyle(
                                 color: Colors.green,
-                                fontSize: 18,
+                                fontSize: 16,
                                 fontWeight: FontWeight.bold,
                               ),
                             ),
                             Text(
                               'Check your email or spam folder for the verification link.',
-                              style: TextStyle(fontSize: 14),
+                              style: TextStyle(fontSize: 12),
                             ),
                           ],
                         ),
@@ -85,12 +85,12 @@ class EmailVerificationPage extends StatelessWidget {
                     ],
                   ),
                 ),
-                const SizedBox(height: 15),
+                const SizedBox(height: 16),
                 const Text(
                   'Didn\'t receive the email?',
-                  style: TextStyle(fontSize: 14),
+                  style: TextStyle(fontSize: 12),
                 ),
-                const SizedBox(height: 15),
+                const SizedBox(height: 16),
                 BlocBuilder<AuthCubit, AuthState>(
                   builder: (context, state) {
                     return OutlinedButton(
@@ -112,7 +112,7 @@ class EmailVerificationPage extends StatelessWidget {
                       },
                       child: Text(
                         'Back to Login',
-                        style: TextStyle(fontSize: 14),
+                        style: TextStyle(fontSize: 16),
                       ),
                     ),
                   ),

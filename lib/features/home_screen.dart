@@ -13,13 +13,24 @@ class HomeScreen extends StatefulWidget {
 }
 
 class _HomeScreenState extends State<HomeScreen> {
+  List<Widget> pages = [];
   int selectedIndex = 0;
+
+  @override
+  void initState() {
+    super.initState();
+    pages = [
+      FeedPage(userId: widget.userId),
+      UserSearchPage(userId: widget.userId),
+      PostPage(userId: widget.userId),
+      ProfilePage(userId: widget.userId),
+    ];
+  }
 
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-      floatingActionButtonLocation: FloatingActionButtonLocation.centerDocked,
-      body: pages(),
+      body: pages[selectedIndex],
 
       bottomNavigationBar: BottomNavigationBar(
         currentIndex: selectedIndex,
@@ -52,20 +63,5 @@ class _HomeScreenState extends State<HomeScreen> {
         ],
       ),
     );
-  }
-
-  Widget pages() {
-    switch (selectedIndex) {
-      case 0:
-        return const FeedPage();
-      case 1:
-        return UserSearchPage(userId: widget.userId);
-      case 2:
-        return PostPage(userId: widget.userId);
-      case 3:
-        return ProfilePage(userId: widget.userId);
-      default:
-        return const FeedPage();
-    }
   }
 }

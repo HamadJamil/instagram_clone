@@ -2,6 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:flutter_spinkit/flutter_spinkit.dart';
 import 'package:go_router/go_router.dart';
+import 'package:instagram/core/constants/app_images.dart';
 import 'package:instagram/core/routes/app_route_name.dart';
 import 'package:instagram/core/theme/app_colors.dart';
 import 'package:instagram/core/widgets/custom_password_field.dart';
@@ -47,7 +48,11 @@ class _LogInPageState extends State<LogInPage> {
         }
         if (state is AuthSuccess) {
           if (state.isEmailVerified) {
-            context.goNamed(AppRouteName.home);
+            final userId = state.userId;
+            context.goNamed(
+              AppRouteName.home,
+              pathParameters: {'userId': userId!},
+            );
           } else {
             context.goNamed(AppRouteName.emailVerification);
           }
@@ -65,7 +70,7 @@ class _LogInPageState extends State<LogInPage> {
                   children: [
                     const SizedBox(height: 140),
                     const Image(
-                      image: AssetImage('assets/images/instagram.png'),
+                      image: AssetImage(AppImages.logo),
                       height: 80.0,
                       width: 80.0,
                     ),
@@ -84,7 +89,7 @@ class _LogInPageState extends State<LogInPage> {
                         return null;
                       },
                     ),
-                    const SizedBox(height: 10),
+                    const SizedBox(height: 12),
 
                     CustomPasswordField(
                       label: 'Password',
@@ -96,7 +101,7 @@ class _LogInPageState extends State<LogInPage> {
                         return null;
                       },
                     ),
-                    const SizedBox(height: 15),
+                    const SizedBox(height: 16),
                     BlocBuilder<AuthCubit, AuthState>(
                       builder: (context, state) {
                         return SizedBox(
@@ -113,7 +118,7 @@ class _LogInPageState extends State<LogInPage> {
                         );
                       },
                     ),
-                    const SizedBox(height: 10),
+                    const SizedBox(height: 12),
                     InkWell(
                       onTap: () {
                         context.goNamed(AppRouteName.forgotPassword);
@@ -137,7 +142,7 @@ class _LogInPageState extends State<LogInPage> {
                         ),
                       ),
                     ),
-                    const SizedBox(height: 70),
+                    const SizedBox(height: 72),
                   ],
                 ),
               ),

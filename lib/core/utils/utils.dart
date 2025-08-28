@@ -1,23 +1,7 @@
 import 'dart:io';
 
-import 'package:flutter/material.dart';
+import 'package:image_picker/image_picker.dart';
 import 'package:photo_manager/photo_manager.dart';
-
-void showErrorSnackbar(
-  BuildContext context,
-  String message,
-  Color backgroundColor,
-) {
-  ScaffoldMessenger.of(context).showSnackBar(
-    SnackBar(content: Text(message), backgroundColor: backgroundColor),
-  );
-}
-
-Widget buildLoadingIndicator(Color color) {
-  return CircularProgressIndicator(
-    valueColor: AlwaysStoppedAnimation<Color>(color),
-  );
-}
 
 String getMessageFromErrorCode(String code) {
   switch (code) {
@@ -42,9 +26,31 @@ Future<List<File>> convertAssetEntityListToFileList(
   List<File> fileList = [];
   for (AssetEntity assetEntity in assetEntities) {
     File? file = await assetEntity.file;
-    if (file != null) {
-      fileList.add(file);
-    }
+    fileList.add(file!);
   }
   return fileList;
+}
+
+Future<bool> checkAndRequestGalleryPermission() async {
+  final PermissionState state = await PhotoManager.requestPermissionExtend();
+
+  return state.isAuth;
+}
+
+Future<File?> imagePickerFromGallery() async {
+  final ImagePicker picker = ImagePicker();
+  final pickedFile = await picker.pickImage(source: ImageSource.gallery);
+  if (pickedFile != null) {
+    return File(pickedFile.path);
+  }
+  return null;
+}
+
+Future<File?> imagePickerFromCamera() async {
+  final ImagePicker picker = ImagePicker();
+  final pickedFile = await picker.pickImage(source: ImageSource.camera);
+  if (pickedFile != null) {
+    return File(pickedFile.path);
+  }
+  return null;
 }
