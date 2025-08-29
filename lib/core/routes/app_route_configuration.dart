@@ -1,4 +1,5 @@
 import 'package:go_router/go_router.dart';
+import 'package:instagram/core/models/user_model.dart';
 import 'package:instagram/core/routes/app_route_name.dart';
 import 'package:instagram/features/auth/presentation/pages/email_verification_page.dart';
 import 'package:instagram/features/auth/presentation/pages/forgot_password_page.dart';
@@ -47,15 +48,13 @@ class AppRouteConfiguration {
         },
       ),
       GoRoute(
-        path: '/postCaptionPage/:userId',
+        path: '/postCaptionPage',
         name: AppRouteName.postCaptionPage,
         builder: (context, state) {
-          final List<AssetEntity> selectedImages =
-              state.extra as List<AssetEntity>;
-          final String userId = state.pathParameters['userId']!;
+          final data = state.extra as Map<String, dynamic>;
           return PostCaptionPage(
-            selectedImages: selectedImages,
-            userId: userId,
+            selectedImages: data['selectedImages'] as List<AssetEntity>,
+            user: data['user'] as UserModel,
           );
         },
       ),

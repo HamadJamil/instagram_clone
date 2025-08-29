@@ -52,6 +52,7 @@ class ProfileCubit extends Cubit<ProfileState> {
         await _userRepository.update(updatedUser);
 
         emit(currentState.copyWith(user: updatedUser));
+        _postRepository.changeAuthorDetails(updatedUser);
       } catch (e) {
         emit(ProfileError(message: e.toString()));
         emit(currentState);

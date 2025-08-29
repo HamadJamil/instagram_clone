@@ -1,11 +1,14 @@
-import 'package:cached_network_image/cached_network_image.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:flutter_spinkit/flutter_spinkit.dart';
+import 'package:instagram/core/models/post_model.dart';
 import 'package:instagram/core/theme/app_colors.dart';
 import 'package:instagram/features/Profile/presentation/cubits/profile_cubit.dart';
+import 'package:instagram/features/feed/presentation/widgets/post_tile.dart';
 import 'package:instagram/features/profile/presentation/cubits/profile_state.dart';
 import 'package:instagram/features/profile/presentation/pages/edit_profile.dart';
+import 'package:instagram/features/profile/presentation/widgets/post_card.dart';
+import 'package:instagram/features/profile/presentation/widgets/stat_item.dart';
 
 class ProfilePage extends StatefulWidget {
   const ProfilePage({super.key, required this.userId});
@@ -98,21 +101,25 @@ class _ProfilePageState extends State<ProfilePage> {
                                   Expanded(
                                     child: Row(
                                       children: [
-                                        _buildStatItem(
-                                          user.postCount.toString(),
-                                          'posts',
+                                        StatItem(
+                                          value: user.postCount.toString(),
+                                          label: 'posts',
                                         ),
                                         const SizedBox(width: 20.0),
-                                        _buildStatItem(
-                                          user.followers?.length.toString() ??
+                                        StatItem(
+                                          value:
+                                              user.followers?.length
+                                                  .toString() ??
                                               '0',
-                                          'followers',
+                                          label: 'followers',
                                         ),
                                         const SizedBox(width: 20.0),
-                                        _buildStatItem(
-                                          user.following?.length.toString() ??
+                                        StatItem(
+                                          value:
+                                              user.following?.length
+                                                  .toString() ??
                                               '0',
-                                          'following',
+                                          label: 'following',
                                         ),
                                       ],
                                     ),
@@ -160,31 +167,28 @@ class _ProfilePageState extends State<ProfilePage> {
                     gridDelegate:
                         const SliverGridDelegateWithFixedCrossAxisCount(
                           crossAxisCount: 3,
-                          childAspectRatio: .6,
+                          childAspectRatio: .725,
                           crossAxisSpacing: 3,
                           mainAxisSpacing: 3,
                         ),
                     delegate: SliverChildBuilderDelegate((context, index) {
-                      return Container(
-                        color: Colors.grey[300],
-                        child: CachedNetworkImage(
-                          imageUrl: posts[index].imageUrls[0],
-                          fit: BoxFit.cover,
-                          placeholder: (context, url) =>
-                              const Center(child: CircularProgressIndicator()),
-                          errorWidget: (context, url, error) =>
-                              const Center(child: Icon(Icons.error)),
-                        ),
+                      return InkWell(
+                        onLongPress: () {
+                          postDetailView(posts[index], widget.userId);
+                        },
+                        child: PostCard(post: posts[index]),
                       );
                     }, childCount: posts.length),
                   ),
                 ] else if (posts == null) ...[
                   SliverFillRemaining(
+                    hasScrollBody: false,
                     child: Center(child: CircularProgressIndicator()),
                   ),
                 ] else if (posts.isEmpty) ...[
                   SliverFillRemaining(
-                    child: Center(child: Text('Nothing available')),
+                    hasScrollBody: false,
+                    child: Center(child: Text('No posts available')),
                   ),
                 ],
               ],
@@ -196,16 +200,18 @@ class _ProfilePageState extends State<ProfilePage> {
     );
   }
 
-  Widget _buildStatItem(String value, String label) {
-    return Column(
-      mainAxisAlignment: MainAxisAlignment.end,
-      children: [
-        Text(
-          value,
-          style: const TextStyle(fontWeight: FontWeight.bold, fontSize: 16),
-        ),
-        Text(label, style: const TextStyle(fontSize: 16)),
-      ],
+  void postDetailView(PostModel post, String currentUserId) {
+    showDialog(
+      context: context,
+      barrierDismissible: true,
+      builder: (context) {
+        return Dialog(
+          shape: RoundedRectangleBorder(
+            borderRadius: BorderRadius.circular(16),
+          ),
+          child: PostTile(post: post, currentUserId: currentUserId),
+        );
+      },
     );
   }
 }

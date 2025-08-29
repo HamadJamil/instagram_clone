@@ -6,7 +6,6 @@ class AppTheme {
   static final ThemeData light = ThemeData(
     scaffoldBackgroundColor: AppColors.surfaceLight,
     useMaterial3: true,
-
     appBarTheme: const AppBarTheme(
       backgroundColor: AppColors.surfaceLight,
       foregroundColor: AppColors.black,
@@ -22,6 +21,11 @@ class AppTheme {
     textTheme: const TextTheme(
       displayLarge: TextStyle(fontSize: 32, fontWeight: FontWeight.bold),
       bodyLarge: TextStyle(fontSize: 16, color: AppColors.black87),
+    ),
+    textSelectionTheme: const TextSelectionThemeData(
+      cursorColor: AppColors.grey600,
+      selectionColor: AppColors.grey300,
+      selectionHandleColor: AppColors.grey400,
     ),
 
     inputDecorationTheme: const InputDecorationTheme(
@@ -42,12 +46,6 @@ class AppTheme {
       ),
     ),
 
-    textSelectionTheme: const TextSelectionThemeData(
-      cursorColor: AppColors.grey600,
-      selectionColor: AppColors.grey300,
-      selectionHandleColor: AppColors.grey400,
-    ),
-
     outlinedButtonTheme: OutlinedButtonThemeData(
       style: OutlinedButton.styleFrom(
         minimumSize: const Size(double.infinity, 48),
@@ -61,15 +59,6 @@ class AppTheme {
       ),
     ),
 
-    bottomNavigationBarTheme: const BottomNavigationBarThemeData(
-      backgroundColor: AppColors.surfaceLight,
-      selectedItemColor: AppColors.black,
-      unselectedItemColor: AppColors.black,
-      showSelectedLabels: false,
-      showUnselectedLabels: false,
-      elevation: 2,
-    ),
-
     elevatedButtonTheme: ElevatedButtonThemeData(
       style: ElevatedButton.styleFrom(
         minimumSize: const Size(double.infinity, 48),
@@ -81,11 +70,20 @@ class AppTheme {
       ),
     ),
 
+    bottomNavigationBarTheme: const BottomNavigationBarThemeData(
+      backgroundColor: AppColors.surfaceLight,
+      selectedItemColor: AppColors.black,
+      unselectedItemColor: AppColors.black,
+      showSelectedLabels: false,
+      showUnselectedLabels: false,
+      elevation: 2,
+    ),
+
     bottomSheetTheme: BottomSheetThemeData(
       backgroundColor: AppColors.grey300,
       modalBackgroundColor: AppColors.grey300,
       shape: const RoundedRectangleBorder(
-        borderRadius: BorderRadius.vertical(top: Radius.circular(20.0)),
+        borderRadius: BorderRadius.vertical(top: Radius.circular(28.0)),
       ),
     ),
 
@@ -132,7 +130,7 @@ class AppTheme {
       backgroundColor: AppColors.grey900,
       modalBackgroundColor: AppColors.grey900,
       shape: const RoundedRectangleBorder(
-        borderRadius: BorderRadius.vertical(top: Radius.circular(20.0)),
+        borderRadius: BorderRadius.vertical(top: Radius.circular(28.0)),
       ),
     ),
 

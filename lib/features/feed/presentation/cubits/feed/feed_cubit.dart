@@ -1,6 +1,6 @@
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:instagram/core/repository/post_repository.dart';
-import 'package:instagram/features/feed/presentation/cubits/feed_state.dart';
+import 'package:instagram/features/feed/presentation/cubits/feed/feed_state.dart';
 
 class FeedCubit extends Cubit<FeedState> {
   final PostRepository _postRepository;

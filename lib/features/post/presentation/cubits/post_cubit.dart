@@ -2,16 +2,19 @@ import 'dart:io';
 
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:instagram/core/models/post_model.dart';
+import 'package:instagram/core/models/user_model.dart';
 import 'package:instagram/core/repository/post_repository.dart';
 import 'package:instagram/core/repository/strorage_repository.dart';
+import 'package:instagram/core/repository/user_repository.dart';
 import 'package:instagram/core/utils/utils.dart';
 import 'package:instagram/features/post/presentation/cubits/post_state.dart';
 import 'package:photo_manager/photo_manager.dart';
 
 class PostCubit extends Cubit<PostPageState> {
+  final UserRepository _userRepository;
   final PostRepository postRepository;
   final StorageRepository storageRepository;
-  PostCubit(this.postRepository, this.storageRepository)
+  PostCubit(this.postRepository, this.storageRepository, this._userRepository)
     : super(PostPageInitial());
 
   void createPost(PostModel post, List<File> images) async {
@@ -20,12 +23,13 @@ class PostCubit extends Cubit<PostPageState> {
       final imageUrls = await storageRepository.postImages(images);
       await postRepository.create(post.copyWith(imageUrls: imageUrls));
       emit(PostPagePostCreated());
+      _userRepository.incrementPostCount(post.authorId);
     } catch (error) {
       emit(PostPageError(error.toString()));
     }
   }
 
-  void loadPosts() async {
+  void loadPosts(String userId) async {
     try {
       final result = await checkAndRequestGalleryPermission();
       if (!result) {
@@ -37,10 +41,12 @@ class PostCubit extends Cubit<PostPageState> {
       final initialSelectedAssets = loadedAssets.isNotEmpty
           ? [loadedAssets[0]]
           : [];
+      final UserModel user = await _userRepository.get(userId);
       emit(
         PostPageLoaded(
           memoryImages: loadedAssets,
           selectedImages: initialSelectedAssets as List<AssetEntity>,
+          user: user,
         ),
       );
     } catch (error) {

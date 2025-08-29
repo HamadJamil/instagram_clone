@@ -1,14 +1,8 @@
 import 'dart:io';
 
-import 'package:carousel_slider/carousel_slider.dart';
-import 'package:cloud_firestore/cloud_firestore.dart';
-import 'package:firebase_storage/firebase_storage.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
-import 'package:go_router/go_router.dart';
-import 'package:instagram/core/repository/post_repository.dart';
-import 'package:instagram/core/repository/strorage_repository.dart';
-import 'package:instagram/core/routes/app_route_name.dart';
+import 'package:instagram/core/models/user_model.dart';
 import 'package:instagram/core/utils/utils.dart';
 import 'package:instagram/core/widgets/cutom_text_form_field.dart';
 import 'package:instagram/core/models/post_model.dart';
@@ -18,19 +12,18 @@ import 'package:photo_manager/photo_manager.dart';
 import 'package:photo_view/photo_view.dart';
 
 // Need to get user via State (Fixed)
-// Need to fix Post Cubit Dependency
+// Need to fix Post Cubit Dependency(Fixed)
 // Show Success & Error Snackbar
 // Clear Selection Image after Posted(Implement this Function In PostCubit)
-// For time Bieng getting user directly from the state
 
 class PostCaptionPage extends StatefulWidget {
   const PostCaptionPage({
     super.key,
     required this.selectedImages,
-    required this.userId,
+    required this.user,
   });
   final List<AssetEntity> selectedImages;
-  final String userId;
+  final UserModel user;
 
   @override
   State<PostCaptionPage> createState() => _PostCaptionPageState();
@@ -74,28 +67,22 @@ class _PostCaptionPageState extends State<PostCaptionPage> {
         title: const Text('Add Caption'),
         centerTitle: false,
       ),
-      body: BlocProvider(
-        create: (context) => PostCubit(
-          PostRepository(FirebaseFirestore.instance),
-          StorageRepository(FirebaseStorage.instance),
-        ),
-        child: BlocListener<PostCubit, PostPageState>(
-          listener: (context, state) {
-            if (state is PostPagePostCreated) {
-              ScaffoldMessenger.of(context).showSnackBar(
-                const SnackBar(content: Text('Posted Successfully')),
-              );
-              context.goNamed(
-                AppRouteName.home,
-                pathParameters: {'userId': widget.userId},
-              );
-            } else if (state is PostPageError) {
-              ScaffoldMessenger.of(context).showSnackBar(
-                SnackBar(content: Text('Error: ${state.message}')),
-              );
-            }
-          },
-          child: Column(
+      body: BlocConsumer<PostCubit, PostPageState>(
+        listener: (context, state) {
+          if (state is PostPageError) {
+            ScaffoldMessenger.of(
+              context,
+            ).showSnackBar(SnackBar(content: Text(state.message)));
+          }
+          if (state is PostPagePostCreated) {
+            ScaffoldMessenger.of(context).showSnackBar(
+              const SnackBar(content: Text('Post created successfully')),
+            );
+            Navigator.of(context).pop();
+          }
+        },
+        builder: (context, state) {
+          return Column(
             children: [
               Container(
                 height: 300,
@@ -107,17 +94,15 @@ class _PostCaptionPageState extends State<PostCaptionPage> {
                     ? PhotoView(
                         imageProvider: FileImage(_selectedImageFiles[0]),
                       )
-                    : CarouselSlider(
-                        items: _selectedImageFiles.map((e) {
-                          return PhotoView(imageProvider: FileImage(e));
-                        }).toList(),
-                        options: CarouselOptions(
-                          height: 300,
-                          aspectRatio: 16 / 9,
-                          viewportFraction: 1,
-                          initialPage: 0,
-                          enableInfiniteScroll: false,
-                        ),
+                    : PageView.builder(
+                        itemCount: _selectedImageFiles.length,
+                        itemBuilder: (context, index) {
+                          return PhotoView(
+                            imageProvider: FileImage(
+                              _selectedImageFiles[index],
+                            ),
+                          );
+                        },
                       ),
               ),
               const SizedBox(height: 16),
@@ -137,7 +122,9 @@ class _PostCaptionPageState extends State<PostCaptionPage> {
                       onPressed: () {
                         PostModel postModel = PostModel(
                           id: DateTime.now().microsecondsSinceEpoch.toString(),
-                          userId: widget.userId,
+                          authorId: widget.user.uid,
+                          authorName: widget.user.name,
+                          authorImage: widget.user.photoUrl,
                           imageUrls: [],
                           caption: _controller.text,
                           createdAt: DateTime.now(),
@@ -155,8 +142,8 @@ class _PostCaptionPageState extends State<PostCaptionPage> {
                 ),
               ),
             ],
-          ),
-        ),
+          );
+        },
       ),
     );
   }

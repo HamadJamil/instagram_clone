@@ -15,7 +15,8 @@ import 'package:instagram/features/auth/data/datasources/firebase_auth_service.d
 import 'package:instagram/features/auth/data/repositories/auth_repository_implementation.dart';
 import 'package:instagram/features/auth/domain/repositories/auth_repository.dart';
 import 'package:instagram/features/auth/presentation/cubits/auth_cubit.dart';
-import 'package:instagram/features/feed/presentation/cubits/feed_cubit.dart';
+import 'package:instagram/features/feed/presentation/cubits/feed/feed_cubit.dart';
+import 'package:instagram/features/post/presentation/cubits/post_cubit.dart';
 import 'package:instagram/features/search/presentation/cubits/search_cubit.dart';
 import 'package:instagram/firebase_options.dart';
 
@@ -53,6 +54,10 @@ Future<void> main() async {
           ),
           BlocProvider(create: (context) => SearchCubit(userRepository)),
           BlocProvider(create: (context) => FeedCubit(postRepository)),
+          BlocProvider(
+            create: (context) =>
+                PostCubit(postRepository, storageRepository, userRepository),
+          ),
         ],
         child: const MyApp(),
       ),

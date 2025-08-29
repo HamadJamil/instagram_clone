@@ -1,7 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
-import 'package:instagram/features/feed/presentation/cubits/feed_cubit.dart';
-import 'package:instagram/features/feed/presentation/cubits/feed_state.dart';
+import 'package:instagram/features/feed/presentation/cubits/feed/feed_cubit.dart';
+import 'package:instagram/features/feed/presentation/cubits/feed/feed_state.dart';
 import 'package:instagram/features/feed/presentation/widgets/post_tile.dart';
 
 class FeedPage extends StatefulWidget {
@@ -66,7 +66,10 @@ class _FeedPageState extends State<FeedPage> {
                   if (index == state.posts.length) {
                     return Center(child: CircularProgressIndicator());
                   }
-                  return PostTile(post: state.posts[index]);
+                  return PostTile(
+                    post: state.posts[index],
+                    currentUserId: currentUserId,
+                  );
                 },
               ),
             );
@@ -78,7 +81,10 @@ class _FeedPageState extends State<FeedPage> {
                 if (index == state.currentPosts.length) {
                   return Center(child: CircularProgressIndicator());
                 }
-                return PostTile(post: state.currentPosts[index]);
+                return PostTile(
+                  post: state.currentPosts[index],
+                  currentUserId: currentUserId,
+                );
               },
             );
           } else if (state is FeedRefreshing) {
@@ -92,12 +98,15 @@ class _FeedPageState extends State<FeedPage> {
                   if (index == state.currentPosts.length) {
                     return Center(child: CircularProgressIndicator());
                   }
-                  return PostTile(post: state.currentPosts[index]);
+                  return PostTile(
+                    post: state.currentPosts[index],
+                    currentUserId: currentUserId,
+                  );
                 },
               ),
             );
           }
-          return SizedBox();
+          return SizedBox(child: Center(child: Text('No Posts Available')));
         },
       ),
     );

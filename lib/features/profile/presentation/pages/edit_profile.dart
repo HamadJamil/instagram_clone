@@ -141,23 +141,15 @@ class _EditProfilePageState extends State<EditProfilePage> {
 
   void _showImagePickerBottomSheet() {
     showModalBottomSheet(
+      showDragHandle: true,
+      enableDrag: true,
       context: context,
       builder: (context) {
         return Container(
-          height: 236,
-          padding: const EdgeInsets.only(left: 16.0, right: 16.0, top: 16.0),
+          height: 212,
+          padding: const EdgeInsets.only(left: 16.0, right: 16.0, top: 8.0),
           child: Column(
             children: [
-              Container(
-                margin: const EdgeInsets.symmetric(vertical: 8.0),
-                width: 60,
-                height: 4,
-                decoration: BoxDecoration(
-                  color: Colors.grey[400],
-                  borderRadius: BorderRadius.circular(2),
-                ),
-              ),
-              SizedBox(height: 16),
               ElevatedButton.icon(
                 icon: Icon(Icons.photo_library),
                 label: Text('Pick from Gallery'),

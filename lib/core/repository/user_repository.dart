@@ -62,6 +62,32 @@ class UserRepository {
     }
   }
 
+  Future<void> incrementPostCount(String userId) async {
+    try {
+      final userRef = _firestore.collection('users').doc(userId);
+      await userRef.set({
+        'postCount': FieldValue.increment(1),
+      }, SetOptions(merge: true));
+    } catch (e) {
+      throw Exception(
+        'FirestoreProfileService :Failed to increment post count: $e',
+      );
+    }
+  }
+
+  Future<void> decrementPostCount(String userId) async {
+    try {
+      final userRef = _firestore.collection('users').doc(userId);
+      await userRef.set({
+        'postCount': FieldValue.increment(-1),
+      }, SetOptions(merge: true));
+    } catch (e) {
+      throw Exception(
+        'FirestoreProfileService :Failed to decrement post count: $e',
+      );
+    }
+  }
+
   Future<void> follow(String userId, String targetUserId) async {
     try {
       final batch = _firestore.batch();
