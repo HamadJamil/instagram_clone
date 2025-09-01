@@ -1,7 +1,6 @@
 import 'dart:io';
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
-import 'package:flutter_spinkit/flutter_spinkit.dart';
 import 'package:go_router/go_router.dart';
 import 'package:instagram/core/routes/app_route_name.dart';
 import 'package:instagram/core/theme/app_colors.dart';
@@ -86,9 +85,7 @@ class _PostPageState extends State<PostPage> {
         },
         builder: (context, state) {
           if (state is PostPageLoading) {
-            return Center(
-              child: SpinKitChasingDots(color: AppColors.primary, size: 40),
-            );
+            return Center(child: CircularProgressIndicator());
           }
 
           if (state is PostPageLoaded) {

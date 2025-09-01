@@ -25,6 +25,8 @@ class ProfileLoaded extends ProfileState {
   List<Object?> get props => [user, posts];
 }
 
+class ProfileLogOut extends ProfileState {}
+
 class ProfileError extends ProfileState {
   final String message;
 

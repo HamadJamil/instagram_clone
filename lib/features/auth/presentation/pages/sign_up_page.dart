@@ -1,10 +1,8 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
-import 'package:flutter_spinkit/flutter_spinkit.dart';
 import 'package:go_router/go_router.dart';
 import 'package:instagram/core/constants/app_images.dart';
 import 'package:instagram/core/routes/app_route_name.dart';
-import 'package:instagram/core/theme/app_colors.dart';
 import 'package:instagram/core/widgets/custom_password_field.dart';
 import 'package:instagram/core/widgets/cutom_text_form_field.dart';
 import 'package:instagram/features/auth/presentation/cubits/auth_cubit.dart';
@@ -117,7 +115,7 @@ class _SignUpPageState extends State<SignUpPage> {
                         child: FilledButton(
                           onPressed: () => _signUp(context),
                           child: state is AuthLoading
-                              ? SpinKitWave(color: AppColors.white, size: 20.0)
+                              ? CircularProgressIndicator.adaptive()
                               : const Text(
                                   'Sign Up',
                                   style: TextStyle(

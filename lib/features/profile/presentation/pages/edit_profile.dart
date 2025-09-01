@@ -1,7 +1,6 @@
 import 'dart:io';
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
-import 'package:flutter_spinkit/flutter_spinkit.dart';
 import 'package:instagram/core/models/user_model.dart';
 import 'package:instagram/core/utils/utils.dart';
 import 'package:instagram/core/widgets/cutom_text_form_field.dart';
@@ -97,7 +96,7 @@ class _EditProfilePageState extends State<EditProfilePage> {
                       child: ElevatedButton(
                         onPressed: _updateProfile,
                         child: state is ProfileLoading
-                            ? SpinKitCircle(color: Colors.white, size: 20.0)
+                            ? CircularProgressIndicator.adaptive()
                             : Text('Update Profile'),
                       ),
                     );

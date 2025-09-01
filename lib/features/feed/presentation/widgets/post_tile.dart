@@ -4,10 +4,14 @@ import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:get_time_ago/get_time_ago.dart';
 import 'package:instagram/core/models/post_model.dart';
-import 'package:instagram/core/repository/post_repository.dart';
+import 'package:instagram/core/repository/comment_repository.dart';
+import 'package:instagram/core/repository/user_repository.dart';
 import 'package:instagram/core/theme/app_colors.dart';
-import 'package:instagram/features/feed/presentation/cubits/like/like_cubit.dart';
-import 'package:instagram/features/feed/presentation/cubits/like/like_state.dart';
+import 'package:instagram/features/feed/presentation/cubits/comment/comment_cubit.dart';
+import 'package:instagram/features/feed/presentation/cubits/feed/feed_cubit.dart';
+import 'package:instagram/features/feed/presentation/cubits/feed/feed_state.dart';
+
+import 'package:instagram/features/feed/presentation/widgets/comment_tile.dart';
 
 class PostTile extends StatelessWidget {
   const PostTile({super.key, required this.post, required this.currentUserId});
@@ -16,14 +20,7 @@ class PostTile extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    return BlocProvider(
-      create: (context) => LikeCubit(
-        postId: post.id,
-        userId: currentUserId,
-        postRepository: PostRepository(FirebaseFirestore.instance),
-      ),
-      child: _PostTileContent(post: post, currentUserId: currentUserId),
-    );
+    return _PostTileContent(post: post, currentUserId: currentUserId);
   }
 }
 
@@ -34,31 +31,18 @@ class _PostTileContent extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    return BlocConsumer<LikeCubit, LikeState>(
-      listener: (context, state) {
-        if (state is LikeError) {
-          ScaffoldMessenger.of(
-            context,
-          ).showSnackBar(SnackBar(content: Text(state.message)));
-        }
-      },
-      builder: (context, state) {
-        final likesCount = state is LikeLoaded
-            ? state.likesCount
-            : post.likesCount;
-        final isLiked = state is LikeLoaded
-            ? state.isLiked
-            : post.isLikedBy(currentUserId);
+    final feedState = context.watch<FeedCubit>().state;
+    final isUpdating = feedState is FeedLoadingMore;
 
-        return _buildPostContent(context, likesCount, isLiked);
-      },
-    );
+    return _buildPostContent(context, isUpdating);
   }
 
-  Widget _buildPostContent(BuildContext context, int likesCount, bool isLiked) {
+  Widget _buildPostContent(BuildContext context, bool isUpdating) {
     final theme = Theme.of(context);
     final isMultiImage = post.imageUrls.length > 1;
     final commentCount = post.comments ?? 0;
+    final isLiked = post.isLikedBy(currentUserId);
+    final likesCount = post.likesCount;
 
     return Container(
       color: Colors.white,
@@ -66,6 +50,7 @@ class _PostTileContent extends StatelessWidget {
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
+          // Header with user info
           Padding(
             padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 8),
             child: Row(
@@ -108,7 +93,7 @@ class _PostTileContent extends StatelessWidget {
             ),
           ),
 
-          // Post images with List for multiple images
+          // Post images
           Stack(
             children: [
               Container(
@@ -118,7 +103,7 @@ class _PostTileContent extends StatelessWidget {
                 child: GestureDetector(
                   onDoubleTap: () {
                     if (!isLiked) {
-                      context.read<LikeCubit>().toggleLike();
+                      context.read<FeedCubit>().toggleLike(post.id);
                       _showLikeAnimation(context);
                     }
                   },
@@ -181,16 +166,13 @@ class _PostTileContent extends StatelessWidget {
                 Row(
                   children: [
                     IconButton(
-                      icon: AnimatedSwitcher(
-                        duration: const Duration(milliseconds: 300),
-                        child: Icon(
-                          isLiked ? Icons.favorite : Icons.favorite_border,
-                          key: ValueKey<bool>(isLiked),
-                          size: 28,
-                          color: isLiked ? Colors.red : null,
-                        ),
+                      icon: Icon(
+                        isLiked ? Icons.favorite : Icons.favorite_border,
+                        size: 28,
+                        color: isLiked ? Colors.red : null,
                       ),
-                      onPressed: () => context.read<LikeCubit>().toggleLike(),
+                      onPressed: () =>
+                          context.read<FeedCubit>().toggleLike(post.id),
                       padding: EdgeInsets.zero,
                     ),
                     const SizedBox(width: 4),
@@ -311,76 +293,19 @@ class _PostTileContent extends StatelessWidget {
       isScrollControlled: true,
       context: context,
       builder: (context) {
-        return ConstrainedBox(
-          constraints: BoxConstraints(
-            maxHeight: MediaQuery.of(context).size.height * 0.85,
+        final firestore = FirebaseFirestore.instance;
+        return BlocProvider(
+          create: (context) => CommentCubit(
+            commentRepository: CommentRepository(firestore),
+            currentUserId: currentUserId,
+            userRepository: UserRepository(firestore),
+            postId: post.id,
           ),
-          child: Column(
-            children: [
-              Text(
-                'Comments',
-                style: TextStyle(fontWeight: FontWeight.bold, fontSize: 16),
-              ),
-              const Divider(),
-              Expanded(
-                child: ListView.builder(
-                  itemCount: post.comments ?? 0,
-                  itemBuilder: (context, index) {
-                    return ListTile(
-                      leading: CircleAvatar(
-                        backgroundColor: AppColors.grey400,
-                        child: const Icon(Icons.person, size: 20),
-                      ),
-                      title: Text('User $index'),
-                      subtitle: Text('This is comment number $index'),
-                    );
-                  },
-                ),
-              ),
-              Padding(
-                padding: EdgeInsets.only(
-                  bottom: MediaQuery.of(context).viewInsets.bottom,
-                ),
-                child: Column(
-                  children: [
-                    const Divider(),
-                    Padding(
-                      padding: const EdgeInsets.symmetric(horizontal: 16.0),
-                      child: TextFormField(
-                        decoration: InputDecoration(
-                          border: InputBorder.none,
-                          contentPadding: const EdgeInsets.symmetric(
-                            vertical: 12,
-                          ),
-                          hintText: 'Add a comment...',
-                          prefixIcon: Container(
-                            margin: const EdgeInsets.only(right: 12.0),
-                            decoration: const BoxDecoration(
-                              shape: BoxShape.circle,
-                              color: AppColors.grey400,
-                            ),
-                            child: const Icon(Icons.person, size: 20),
-                          ),
-                          suffixIcon: Padding(
-                            padding: const EdgeInsets.only(left: 12.0),
-                            child: IconButton(
-                              icon: const Icon(
-                                Icons.send,
-                                color: AppColors.primary,
-                              ),
-                              onPressed: () {
-                                //////////////////////
-                                Navigator.pop(context);
-                              },
-                            ),
-                          ),
-                        ),
-                      ),
-                    ),
-                  ],
-                ),
-              ),
-            ],
+          child: ConstrainedBox(
+            constraints: BoxConstraints(
+              maxHeight: MediaQuery.of(context).size.height * 0.85,
+            ),
+            child: CommentTile(post: post, currentUserId: currentUserId),
           ),
         );
       },

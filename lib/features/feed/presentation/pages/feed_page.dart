@@ -20,14 +20,14 @@ class _FeedPageState extends State<FeedPage> {
   void initState() {
     super.initState();
     currentUserId = widget.userId;
-    context.read<FeedCubit>().fetchPosts(currentUserId);
+    context.read<FeedCubit>().subscribeToFeed();
     _scrollController.addListener(_onScroll);
   }
 
   void _onScroll() {
     if (_scrollController.position.pixels ==
         _scrollController.position.maxScrollExtent) {
-      context.read<FeedCubit>().loadMorePosts(currentUserId);
+      context.read<FeedCubit>().loadMorePosts();
     }
   }
 
@@ -55,9 +55,12 @@ class _FeedPageState extends State<FeedPage> {
           if (state is FeedInitial || state is FeedLoading) {
             return Center(child: CircularProgressIndicator());
           } else if (state is FeedLoaded) {
+            if (state.posts.isEmpty) {
+              return Center(child: Text('No Posts Available'));
+            }
             return RefreshIndicator(
               onRefresh: () async {
-                await context.read<FeedCubit>().refreshPosts(currentUserId);
+                await context.read<FeedCubit>().refreshFeed();
               },
               child: ListView.builder(
                 controller: _scrollController,
@@ -86,24 +89,6 @@ class _FeedPageState extends State<FeedPage> {
                   currentUserId: currentUserId,
                 );
               },
-            );
-          } else if (state is FeedRefreshing) {
-            return RefreshIndicator(
-              onRefresh: () async {
-                await context.read<FeedCubit>().refreshPosts(currentUserId);
-              },
-              child: ListView.builder(
-                itemCount: state.currentPosts.length + 1,
-                itemBuilder: (context, index) {
-                  if (index == state.currentPosts.length) {
-                    return Center(child: CircularProgressIndicator());
-                  }
-                  return PostTile(
-                    post: state.currentPosts[index],
-                    currentUserId: currentUserId,
-                  );
-                },
-              ),
             );
           }
           return SizedBox(child: Center(child: Text('No Posts Available')));

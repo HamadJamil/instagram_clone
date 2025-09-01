@@ -1,9 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
-import 'package:flutter_spinkit/flutter_spinkit.dart';
 import 'package:go_router/go_router.dart';
 import 'package:instagram/core/routes/app_route_name.dart';
-import 'package:instagram/core/theme/app_colors.dart';
 import 'package:instagram/features/auth/presentation/cubits/auth_cubit.dart';
 import 'package:instagram/features/auth/presentation/cubits/auth_state.dart';
 
@@ -98,7 +96,7 @@ class EmailVerificationPage extends StatelessWidget {
                         context.read<AuthCubit>().sendVerificationEmail();
                       },
                       child: state is AuthLoading
-                          ? SpinKitWave(color: AppColors.primary, size: 20.0)
+                          ? CircularProgressIndicator.adaptive()
                           : const Text('Re-send Email'),
                     );
                   },

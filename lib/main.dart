@@ -49,11 +49,18 @@ Future<void> main() async {
             create: (context) => AuthCubit(authRepository: authRepository),
           ),
           BlocProvider(
-            create: (context) =>
-                ProfileCubit(userRepository, postRepository, storageRepository),
+            create: (context) => ProfileCubit(
+              authRepository,
+              userRepository,
+              postRepository,
+              storageRepository,
+            ),
           ),
           BlocProvider(create: (context) => SearchCubit(userRepository)),
-          BlocProvider(create: (context) => FeedCubit(postRepository)),
+          BlocProvider(
+            create: (context) =>
+                FeedCubit(postRepository, auth.currentUser!.uid),
+          ),
           BlocProvider(
             create: (context) =>
                 PostCubit(postRepository, storageRepository, userRepository),

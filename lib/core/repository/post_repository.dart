@@ -4,55 +4,53 @@ import 'package:instagram/core/models/user_model.dart';
 
 class PostRepository {
   final FirebaseFirestore _firestore;
-  DocumentSnapshot? _lastDocument;
-  List<PostModel> _allPosts = [];
 
   PostRepository(this._firestore);
 
-  Future<List<PostModel>> fetch(
-    String userId, {
-    bool loadMore = false,
-    bool refresh = false,
-  }) async {
-    if (refresh) {
-      _lastDocument = null;
-      _allPosts = [];
+  Stream<List<PostModel>> getPostsStream({
+    int limit = 10,
+    DocumentSnapshot? lastDocument,
+  }) {
+    var query = _firestore
+        .collection('posts')
+        .orderBy('createdAt', descending: true)
+        .limit(limit);
+
+    if (lastDocument != null) {
+      query = query.startAfterDocument(lastDocument);
     }
 
-    try {
-      Query query = _firestore
-          .collection('posts')
-          .where('authorId', isNotEqualTo: userId)
-          .orderBy('createdAt', descending: true)
-          .limit(10);
-
-      if (_lastDocument != null) {
-        query = query.startAfterDocument(_lastDocument!);
-      }
-
-      final snapshot = await query.get();
-
-      if (snapshot.docs.length == 10) {
-        _lastDocument = snapshot.docs.last;
-      }
-
-      final newPosts = snapshot.docs
-          .map((doc) => PostModel.fromJson(doc.data() as Map<String, dynamic>))
-          .toList();
-
-      _allPosts.addAll(newPosts);
-
-      return _allPosts;
-    } catch (e) {
-      throw Exception('FireStoreFeedService: Error fetching posts: $e');
-    }
+    return query.snapshots().map((snapshot) {
+      return snapshot.docs.map((doc) {
+        return PostModel.fromJson(doc.data());
+      }).toList();
+    });
   }
 
-  bool get hasMore => _lastDocument != null;
+  Future<List<PostModel>> loadMorePosts({
+    required DocumentSnapshot lastDocument,
+    int limit = 10,
+  }) async {
+    final snapshot = await _firestore
+        .collection('posts')
+        .orderBy('createdAt', descending: true)
+        .startAfterDocument(lastDocument)
+        .limit(limit)
+        .get();
 
-  void resetPagination() {
-    _lastDocument = null;
-    _allPosts = [];
+    return snapshot.docs.map((doc) {
+      return PostModel.fromJson(doc.data());
+    }).toList();
+  }
+
+  Future<DocumentSnapshot?> getLastDocument({int limit = 10}) async {
+    final snapshot = await _firestore
+        .collection('posts')
+        .orderBy('createdAt', descending: true)
+        .limit(limit)
+        .get();
+
+    return snapshot.docs.length == limit ? snapshot.docs.last : null;
   }
 
   Future<void> create(PostModel post) async {

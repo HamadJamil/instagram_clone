@@ -2,8 +2,10 @@ import 'package:equatable/equatable.dart';
 import 'package:instagram/core/models/post_model.dart';
 
 abstract class FeedState extends Equatable {
+  const FeedState();
+
   @override
-  List<Object?> get props => [];
+  List<Object> get props => [];
 }
 
 class FeedInitial extends FeedState {}
@@ -14,32 +16,27 @@ class FeedLoaded extends FeedState {
   final List<PostModel> posts;
   final bool hasMore;
 
-  FeedLoaded(this.posts, {this.hasMore = true});
+  const FeedLoaded({required this.posts, required this.hasMore});
 
   @override
-  List<Object?> get props => [posts, hasMore];
-}
-
-class FeedError extends FeedState {
-  final String message;
-  FeedError(this.message);
-
-  @override
-  List<Object?> get props => [message];
+  List<Object> get props => [posts, hasMore];
 }
 
 class FeedLoadingMore extends FeedState {
   final List<PostModel> currentPosts;
-  FeedLoadingMore(this.currentPosts);
+  final bool hasMore;
+
+  const FeedLoadingMore({required this.currentPosts, required this.hasMore});
 
   @override
-  List<Object?> get props => [currentPosts];
+  List<Object> get props => [currentPosts, hasMore];
 }
 
-class FeedRefreshing extends FeedState {
-  final List<PostModel> currentPosts;
-  FeedRefreshing(this.currentPosts);
+class FeedError extends FeedState {
+  final String message;
+
+  const FeedError(this.message);
 
   @override
-  List<Object?> get props => [currentPosts];
+  List<Object> get props => [message];
 }

@@ -1,8 +1,8 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
-import 'package:flutter_spinkit/flutter_spinkit.dart';
+import 'package:go_router/go_router.dart';
 import 'package:instagram/core/models/post_model.dart';
-import 'package:instagram/core/theme/app_colors.dart';
+import 'package:instagram/core/routes/app_route_name.dart';
 import 'package:instagram/features/Profile/presentation/cubits/profile_cubit.dart';
 import 'package:instagram/features/feed/presentation/widgets/post_tile.dart';
 import 'package:instagram/features/profile/presentation/cubits/profile_state.dart';
@@ -34,10 +34,13 @@ class _ProfilePageState extends State<ProfilePage> {
             context,
           ).showSnackBar(SnackBar(content: Text('Error: ${state.message}')));
         }
+        if (state is ProfileLogOut) {
+          context.goNamed(AppRouteName.login);
+        }
       },
       builder: (context, state) {
         if (state is ProfileLoading) {
-          return Center(child: SpinKitWave(color: AppColors.primary, size: 40));
+          return Center(child: CircularProgressIndicator.adaptive());
         }
         if (state is ProfileLoaded) {
           final profileState = state;
@@ -54,9 +57,9 @@ class _ProfilePageState extends State<ProfilePage> {
                   centerTitle: false,
                   actions: [
                     IconButton(
-                      icon: const Icon(Icons.settings),
+                      icon: const Icon(Icons.logout_outlined),
                       onPressed: () {
-                        /////////////////
+                        context.read<ProfileCubit>().logOut();
                       },
                     ),
                   ],
