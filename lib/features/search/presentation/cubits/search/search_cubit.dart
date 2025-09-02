@@ -2,7 +2,7 @@ import 'dart:async';
 
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:instagram/core/repository/user_repository.dart';
-import 'package:instagram/features/search/presentation/cubits/search_state.dart';
+import 'package:instagram/features/search/presentation/cubits/search/search_state.dart';
 
 class SearchCubit extends Cubit<SearchState> {
   final UserRepository _userRepository;

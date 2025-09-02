@@ -1,14 +1,14 @@
 import 'dart:io';
+
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:go_router/go_router.dart';
 import 'package:instagram/core/routes/app_route_name.dart';
 import 'package:instagram/core/theme/app_colors.dart';
-import 'package:instagram/features/post/presentation/cubits/post_cubit.dart';
-import 'package:instagram/features/post/presentation/cubits/post_state.dart';
+import 'package:instagram/features/post/presentation/cubits/gallery/gallery_cubit.dart';
+import 'package:instagram/features/post/presentation/cubits/gallery/gallery_state.dart';
 import 'package:instagram/features/post/presentation/widgets/asset_thumbnail.dart';
 import 'package:photo_manager/photo_manager.dart';
-import 'package:photo_view/photo_view.dart';
 
 class PostPage extends StatefulWidget {
   const PostPage({super.key, required this.userId});
@@ -19,10 +19,26 @@ class PostPage extends StatefulWidget {
 }
 
 class _PostPageState extends State<PostPage> {
+  final ScrollController _scrollController = ScrollController();
+
   @override
   void initState() {
-    context.read<PostCubit>().loadPosts(widget.userId);
     super.initState();
+    context.read<GalleryCubit>().loadGalleryImages();
+    _scrollController.addListener(_onScroll);
+  }
+
+  void _onScroll() {
+    if (_scrollController.position.pixels ==
+        _scrollController.position.maxScrollExtent) {
+      context.read<GalleryCubit>().loadMoreImages();
+    }
+  }
+
+  @override
+  void dispose() {
+    _scrollController.dispose();
+    super.dispose();
   }
 
   @override
@@ -32,22 +48,22 @@ class _PostPageState extends State<PostPage> {
     return Scaffold(
       appBar: AppBar(
         automaticallyImplyLeading: false,
-
         title: const Text('New Post'),
         actions: [
-          BlocBuilder<PostCubit, PostPageState>(
-            buildWhen: (previous, current) {
-              return current is PostPageLoaded && current.isSelectionChanged;
+          BlocSelector<GalleryCubit, GalleryState, List<AssetEntity>>(
+            selector: (state) {
+              if (state is GalleryLoaded) return state.selectedAssets;
+              if (state is GalleryLoadingMore) return state.selectedAssets;
+              return [];
             },
-            builder: (context, state) {
+            builder: (context, selectedAssets) {
               return TextButton(
-                onPressed:
-                    state is PostPageLoaded && state.selectedImages.isNotEmpty
+                onPressed: selectedAssets.isNotEmpty
                     ? () => context.pushNamed(
                         AppRouteName.postCaptionPage,
                         extra: {
-                          'selectedImages': state.selectedImages,
-                          'user': state.user,
+                          'selectedImages': selectedAssets,
+                          'userId': widget.userId,
                         },
                       )
                     : null,
@@ -63,48 +79,86 @@ class _PostPageState extends State<PostPage> {
           ),
         ],
       ),
-      body: BlocConsumer<PostCubit, PostPageState>(
+      body: BlocConsumer<GalleryCubit, GalleryState>(
         listener: (context, state) {
-          if (state is PostPageError) {
+          if (state is GalleryError) {
             ScaffoldMessenger.of(
               context,
             ).showSnackBar(SnackBar(content: Text(state.message)));
           }
-          if (state is PostPagePermissionRequestDenied) {
-            ScaffoldMessenger.of(
-              context,
-            ).showSnackBar(const SnackBar(content: Text('Permission denied')));
+          if (state is GalleryPermissionDenied) {
+            ScaffoldMessenger.of(context).showSnackBar(
+              const SnackBar(content: Text('Gallery permission denied')),
+            );
             Navigator.of(context).pop();
           }
         },
-        buildWhen: (previous, current) {
-          if (current is PostPageLoaded && previous is PostPageLoaded) {
-            return !current.isSelectionChanged;
-          }
-          return true;
-        },
         builder: (context, state) {
-          if (state is PostPageLoading) {
+          if (state is GalleryInitial || state is GalleryLoading) {
             return Center(child: CircularProgressIndicator());
           }
 
-          if (state is PostPageLoaded) {
+          if (state is GalleryLoaded || state is GalleryLoadingMore) {
+            // Extract data with proper type checking
+            final assets = state is GalleryLoaded
+                ? state.assets
+                : (state as GalleryLoadingMore).assets;
+            final selectedAssets = state is GalleryLoaded
+                ? state.selectedAssets
+                : (state as GalleryLoadingMore).selectedAssets;
+            final hasMore = state is GalleryLoaded ? state.hasMore : false;
+            final isMultiSelection = state is GalleryLoaded
+                ? state.isMultiSelection
+                : (state as GalleryLoadingMore).isMultiSelection;
+            final isLoadingMore = state is GalleryLoadingMore;
+
             return CustomScrollView(
+              controller: _scrollController,
               slivers: [
+                // Selected image preview
                 SliverToBoxAdapter(
                   child: SizedBox(
                     height: size.height * 0.5,
-                    child: _buildSelectedPictures(state.selectedImages),
+                    child: _buildSelectedPictures(selectedAssets),
                   ),
                 ),
 
+                // Header with multi-selection toggle
                 SliverAppBar(
                   titleSpacing: 5,
-                  title: const Text('Recent'),
+                  title: Row(
+                    children: [
+                      const Text('Recent'),
+                      const Spacer(),
+                      IconButton(
+                        icon: Icon(
+                          isMultiSelection
+                              ? Icons.check_box
+                              : Icons.check_box_outline_blank,
+                          color: isMultiSelection
+                              ? AppColors.primary
+                              : Colors.grey,
+                        ),
+                        onPressed: () {
+                          if (isMultiSelection) {
+                            // Turn off multi-selection and clear extra selections
+                            context
+                                .read<GalleryCubit>()
+                                .clearSelectionsExceptFirst();
+                          } else {
+                            // Turn on multi-selection
+                            context.read<GalleryCubit>().toggleMultiSelection();
+                          }
+                        },
+                      ),
+                    ],
+                  ),
                   automaticallyImplyLeading: false,
                   floating: false,
+                  pinned: true,
                 ),
 
+                // Gallery grid
                 SliverGrid.builder(
                   gridDelegate: const SliverGridDelegateWithFixedCrossAxisCount(
                     crossAxisCount: 4,
@@ -112,40 +166,87 @@ class _PostPageState extends State<PostPage> {
                     crossAxisSpacing: 1,
                     mainAxisSpacing: 1,
                   ),
-                  itemCount: state.memoryImages.length,
+                  itemCount: assets.length + (hasMore ? 1 : 0),
                   itemBuilder: (context, index) {
-                    final asset = state.memoryImages[index];
+                    if (index == assets.length) {
+                      return Center(
+                        child: isLoadingMore
+                            ? CircularProgressIndicator()
+                            : ElevatedButton(
+                                onPressed: () => context
+                                    .read<GalleryCubit>()
+                                    .loadMoreImages(),
+                                child: Text('Load More'),
+                              ),
+                      );
+                    }
+
+                    final asset = assets[index];
+                    final isSelected = selectedAssets.contains(asset);
+
                     return InkWell(
                       onTap: () {
-                        context.read<PostCubit>().addToSelection(asset);
+                        context.read<GalleryCubit>().toggleAssetSelection(
+                          asset,
+                        );
                       },
-                      child: BlocSelector<PostCubit, PostPageState, bool>(
-                        selector: (state) {
-                          return state is PostPageLoaded &&
-                              state.selectedImages.contains(asset);
-                        },
-                        builder: (context, isSelected) {
-                          return Stack(
-                            children: [
-                              AssetThumbnail(asset: asset),
-                              if (isSelected)
-                                Container(
-                                  color: Colors.black54,
-                                  child: const Center(
-                                    child: Icon(
-                                      Icons.check_circle,
-                                      color: Colors.green,
-                                    ),
+                      child: Stack(
+                        children: [
+                          AssetThumbnail(asset: asset),
+                          if (isSelected)
+                            Container(
+                              color: Colors.black54,
+                              child: Center(
+                                child: Icon(
+                                  Icons.check_circle,
+                                  color: Colors.green,
+                                  size: isMultiSelection ? 24 : 32,
+                                ),
+                              ),
+                            ),
+                          if (isMultiSelection && isSelected)
+                            Positioned(
+                              top: 4,
+                              right: 4,
+                              child: Container(
+                                padding: EdgeInsets.all(4),
+                                decoration: BoxDecoration(
+                                  color: Colors.black,
+                                  shape: BoxShape.circle,
+                                ),
+                                child: Text(
+                                  '${selectedAssets.indexOf(asset) + 1}',
+                                  style: TextStyle(
+                                    color: Colors.white,
+                                    fontSize: 12,
+                                    fontWeight: FontWeight.bold,
                                   ),
                                 ),
-                            ],
-                          );
-                        },
+                              ),
+                            ),
+                        ],
                       ),
                     );
                   },
                 ),
               ],
+            );
+          }
+
+          if (state is GalleryError) {
+            return Center(
+              child: Column(
+                mainAxisAlignment: MainAxisAlignment.center,
+                children: [
+                  Text('Error loading gallery'),
+                  SizedBox(height: 16),
+                  ElevatedButton(
+                    onPressed: () =>
+                        context.read<GalleryCubit>().loadGalleryImages(),
+                    child: Text('Try Again'),
+                  ),
+                ],
+              ),
             );
           }
 
@@ -157,24 +258,28 @@ class _PostPageState extends State<PostPage> {
 
   Widget _buildSelectedPictures(List<AssetEntity> selectedAssets) {
     if (selectedAssets.isEmpty) {
-      return const Center(child: Icon(Icons.image));
+      return const Center(child: Icon(Icons.image, size: 64));
     }
 
-    final lastAsset = selectedAssets.last;
+    return PageView.builder(
+      itemCount: selectedAssets.length,
+      itemBuilder: (context, index) {
+        final asset = selectedAssets[index];
+        return FutureBuilder<File?>(
+          future: asset.file,
+          builder: (context, snapshot) {
+            if (snapshot.connectionState == ConnectionState.waiting) {
+              return Center(child: CircularProgressIndicator());
+            }
 
-    return FutureBuilder<File?>(
-      future: lastAsset.file,
-      builder: (context, snapshot) {
-        if (snapshot.connectionState == ConnectionState.waiting) {
-          return const Center(child: CircularProgressIndicator());
-        }
+            final file = snapshot.data;
+            if (file == null) {
+              return Center(child: Icon(Icons.error));
+            }
 
-        final file = snapshot.data;
-        if (file == null) {
-          return const Center(child: Icon(Icons.error));
-        }
-
-        return PhotoView(imageProvider: FileImage(file));
+            return Image.file(file, fit: BoxFit.cover);
+          },
+        );
       },
     );
   }

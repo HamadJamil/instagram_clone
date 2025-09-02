@@ -11,7 +11,7 @@ import 'package:instagram/features/feed/presentation/cubits/comment/comment_cubi
 import 'package:instagram/features/feed/presentation/cubits/feed/feed_cubit.dart';
 import 'package:instagram/features/feed/presentation/cubits/feed/feed_state.dart';
 
-import 'package:instagram/features/feed/presentation/widgets/comment_tile.dart';
+import 'package:instagram/features/feed/presentation/widgets/comment_section.dart';
 
 class PostTile extends StatelessWidget {
   const PostTile({super.key, required this.post, required this.currentUserId});
@@ -224,14 +224,14 @@ class _PostTileContent extends StatelessWidget {
                       text: '${post.authorName} ',
                       style: TextStyle(
                         fontWeight: FontWeight.w600,
-                        color: theme.colorScheme.onBackground,
+                        color: theme.colorScheme.onSurface,
                         fontSize: 14,
                       ),
                     ),
                     TextSpan(
                       text: post.caption!,
                       style: TextStyle(
-                        color: theme.colorScheme.onBackground,
+                        color: theme.colorScheme.onSurface,
                         fontSize: 14,
                       ),
                     ),
@@ -297,15 +297,15 @@ class _PostTileContent extends StatelessWidget {
         return BlocProvider(
           create: (context) => CommentCubit(
             commentRepository: CommentRepository(firestore),
-            currentUserId: currentUserId,
             userRepository: UserRepository(firestore),
             postId: post.id,
+            currentUserId: currentUserId,
           ),
           child: ConstrainedBox(
             constraints: BoxConstraints(
               maxHeight: MediaQuery.of(context).size.height * 0.85,
             ),
-            child: CommentTile(post: post, currentUserId: currentUserId),
+            child: CommentSection(post: post, currentUserId: currentUserId),
           ),
         );
       },

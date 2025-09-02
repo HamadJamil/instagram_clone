@@ -3,8 +3,9 @@ import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:instagram/core/models/user_model.dart';
 import 'package:instagram/core/theme/app_colors.dart';
-import 'package:instagram/features/search/presentation/cubits/search_cubit.dart';
-import 'package:instagram/features/search/presentation/cubits/search_state.dart';
+import 'package:instagram/features/search/presentation/cubits/search/search_cubit.dart';
+import 'package:instagram/features/search/presentation/cubits/search/search_state.dart';
+import 'package:instagram/features/search/presentation/pages/other_user_page.dart';
 
 class UserSearchPage extends StatefulWidget {
   const UserSearchPage({super.key, required this.userId});
@@ -118,7 +119,7 @@ class _UserSearchPageState extends State<UserSearchPage> {
               itemCount: users.length,
               itemBuilder: (context, index) {
                 final user = users[index];
-                return UserListItem(user: user);
+                return UserListItem(user: user, userId: widget.userId);
               },
             );
           }
@@ -132,8 +133,9 @@ class _UserSearchPageState extends State<UserSearchPage> {
 
 class UserListItem extends StatelessWidget {
   final UserModel user;
+  final String userId;
 
-  const UserListItem({super.key, required this.user});
+  const UserListItem({super.key, required this.user, required this.userId});
 
   @override
   Widget build(BuildContext context) {
@@ -147,7 +149,15 @@ class UserListItem extends StatelessWidget {
       ),
       title: Text(user.name, style: TextStyle(fontWeight: FontWeight.bold)),
       onTap: () {
-        ///
+        Navigator.push(
+          context,
+          MaterialPageRoute(
+            builder: (context) => OtherUserProfilePage(
+              targetUserId: user.uid,
+              currentUserId: userId,
+            ),
+          ),
+        );
       },
     );
   }

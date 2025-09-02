@@ -16,8 +16,10 @@ import 'package:instagram/features/auth/data/repositories/auth_repository_implem
 import 'package:instagram/features/auth/domain/repositories/auth_repository.dart';
 import 'package:instagram/features/auth/presentation/cubits/auth_cubit.dart';
 import 'package:instagram/features/feed/presentation/cubits/feed/feed_cubit.dart';
+import 'package:instagram/features/post/presentation/cubits/gallery/gallery_cubit.dart';
 import 'package:instagram/features/post/presentation/cubits/post_cubit.dart';
-import 'package:instagram/features/search/presentation/cubits/search_cubit.dart';
+import 'package:instagram/features/search/presentation/cubits/otheruser/otheruser_cubit.dart';
+import 'package:instagram/features/search/presentation/cubits/search/search_cubit.dart';
 import 'package:instagram/firebase_options.dart';
 
 Future<void> main() async {
@@ -45,6 +47,13 @@ Future<void> main() async {
     runApp(
       MultiBlocProvider(
         providers: [
+          BlocProvider(
+            create: (context) => OtherUserProfileCubit(
+              userRepository: userRepository,
+              postRepository: postRepository,
+            ),
+          ),
+          BlocProvider(create: (context) => GalleryCubit()),
           BlocProvider(
             create: (context) => AuthCubit(authRepository: authRepository),
           ),

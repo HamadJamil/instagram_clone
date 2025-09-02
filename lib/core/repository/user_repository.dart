@@ -121,16 +121,4 @@ class UserRepository {
       throw Exception('FirestoreProfileService :Failed to unfollow user: $e');
     }
   }
-
-  Future<bool> isFollowing(String userId, String targetUserId) async {
-    try {
-      final doc = await _firestore.collection('users').doc(userId).get();
-      final following = List<String>.from(doc.data()?['following'] ?? []);
-      return following.contains(targetUserId);
-    } catch (e) {
-      throw Exception(
-        'FirestoreProfileService :Failed to check follow status: $e',
-      );
-    }
-  }
 }
