@@ -1,29 +1,23 @@
-import 'dart:io';
+// ignore_for_file: use_build_context_synchronously
 
+import 'dart:io';
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
-import 'package:instagram/core/models/user_model.dart';
-import 'package:instagram/core/utils/utils.dart';
-import 'package:instagram/core/widgets/cutom_text_form_field.dart';
-import 'package:instagram/core/models/post_model.dart';
-import 'package:instagram/features/post/presentation/cubits/post_cubit.dart';
-import 'package:instagram/features/post/presentation/cubits/post_state.dart';
-import 'package:photo_manager/photo_manager.dart';
-import 'package:photo_view/photo_view.dart';
-
-// Need to get user via State (Fixed)
-// Need to fix Post Cubit Dependency(Fixed)
-// Show Success & Error Snackbar
-// Clear Selection Image after Posted(Implement this Function In PostCubit)
+import 'package:instagram/core/utils/toast.dart';
+import 'package:instagram/features/home_cubit.dart';
+import 'package:instagram/features/post/presentation/cubits/gallery/gallery_cubit.dart';
+import 'package:instagram/features/post/presentation/cubits/post/post_cubit.dart';
+import 'package:instagram/features/post/presentation/cubits/post/post_state.dart';
 
 class PostCaptionPage extends StatefulWidget {
+  final List<File> selectedImages;
+  final String user;
+
   const PostCaptionPage({
     super.key,
     required this.selectedImages,
     required this.user,
   });
-  final List<AssetEntity> selectedImages;
-  final UserModel user;
 
   @override
   State<PostCaptionPage> createState() => _PostCaptionPageState();
@@ -31,17 +25,10 @@ class PostCaptionPage extends StatefulWidget {
 
 class _PostCaptionPageState extends State<PostCaptionPage> {
   late TextEditingController _controller;
-  late List<File> _selectedImageFiles;
 
   @override
   void initState() {
     _controller = TextEditingController();
-    _selectedImageFiles = [];
-    convertAssetEntityListToFileList(widget.selectedImages).then((files) {
-      setState(() {
-        _selectedImageFiles = files;
-      });
-    });
     super.initState();
   }
 
@@ -54,97 +41,120 @@ class _PostCaptionPageState extends State<PostCaptionPage> {
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-      resizeToAvoidBottomInset: false,
       appBar: AppBar(
-        titleSpacing: 0,
-        automaticallyImplyLeading: false,
-        leading: IconButton(
-          onPressed: () {
-            Navigator.of(context).pop();
-          },
-          icon: const Icon(Icons.close),
-        ),
         title: const Text('Add Caption'),
-        centerTitle: false,
+        leading: IconButton(
+          icon: const Icon(Icons.close),
+          onPressed: () async {
+            final shouldDiscard = await _showDiscardDialog(context);
+
+            if (shouldDiscard == true) {
+              context.read<GalleryCubit>().reset();
+              Navigator.pop(context);
+              context.read<NavigationCubit>().navigateToHome();
+            }
+          },
+        ),
+
+        actions: [
+          BlocBuilder<PostCubit, PostState>(
+            builder: (context, state) {
+              return state is PostLoading
+                  ? Container(
+                      margin: EdgeInsets.only(right: 16.0),
+                      height: 24,
+                      width: 24,
+                      child: CircularProgressIndicator(),
+                    )
+                  : TextButton(
+                      onPressed: state is! PostLoading
+                          ? () => _createPost(context)
+                          : null,
+                      child: const Text('Post'),
+                    );
+            },
+          ),
+        ],
       ),
-      body: BlocConsumer<PostCubit, PostPageState>(
+      body: BlocConsumer<PostCubit, PostState>(
         listener: (context, state) {
-          if (state is PostPageError) {
-            ScaffoldMessenger.of(
-              context,
-            ).showSnackBar(SnackBar(content: Text(state.message)));
+          if (state is PostError) {
+            ToastUtils.showErrorToast(context, state.message);
           }
-          if (state is PostPagePostCreated) {
-            ScaffoldMessenger.of(context).showSnackBar(
-              const SnackBar(content: Text('Post created successfully')),
-            );
-            Navigator.of(context).pop();
+          if (state is PostCreated) {
+            ToastUtils.showSuccessToast(context, 'Post created successfully');
+            Navigator.pop(context);
           }
         },
         builder: (context, state) {
           return Column(
             children: [
-              Container(
+              SizedBox(
                 height: 300,
                 width: double.infinity,
-                decoration: BoxDecoration(
-                  border: Border.all(color: Colors.grey.shade300),
-                ),
-                child: _selectedImageFiles.length == 1
-                    ? PhotoView(
-                        imageProvider: FileImage(_selectedImageFiles[0]),
-                      )
+                child: widget.selectedImages.length == 1
+                    ? Image.file(widget.selectedImages[0])
                     : PageView.builder(
-                        itemCount: _selectedImageFiles.length,
+                        itemCount: widget.selectedImages.length,
                         itemBuilder: (context, index) {
-                          return PhotoView(
-                            imageProvider: FileImage(
-                              _selectedImageFiles[index],
-                            ),
-                          );
+                          return Image.file(widget.selectedImages[index]);
                         },
                       ),
               ),
-              const SizedBox(height: 16),
+
               Padding(
-                padding: const EdgeInsets.only(left: 8.0, right: 8.0, top: 8.0),
-                child: CustomTextFormField(
-                  label: 'Caption(Optional)',
-                  textController: _controller,
+                padding: const EdgeInsets.only(
+                  top: 32.0,
+                  left: 16.0,
+                  right: 16.0,
                 ),
-              ),
-              const SizedBox(height: 16),
-              Padding(
-                padding: const EdgeInsets.symmetric(horizontal: 8.0),
-                child: BlocBuilder<PostCubit, PostPageState>(
-                  builder: (context, state) {
-                    return OutlinedButton(
-                      onPressed: () {
-                        PostModel postModel = PostModel(
-                          id: DateTime.now().microsecondsSinceEpoch.toString(),
-                          authorId: widget.user.uid,
-                          authorName: widget.user.name,
-                          authorImage: widget.user.photoUrl,
-                          imageUrls: [],
-                          caption: _controller.text,
-                          createdAt: DateTime.now(),
-                        );
-                        context.read<PostCubit>().createPost(
-                          postModel,
-                          _selectedImageFiles,
-                        );
-                      },
-                      child: state is PostPageLoading
-                          ? const CircularProgressIndicator()
-                          : const Text('Share'),
-                    );
-                  },
+                child: TextField(
+                  controller: _controller,
+                  decoration: InputDecoration(
+                    labelText: 'Caption (Optional)',
+                    border: OutlineInputBorder(),
+                  ),
                 ),
               ),
             ],
           );
         },
       ),
+    );
+  }
+
+  void _createPost(BuildContext context) {
+    FocusScope.of(context).unfocus();
+    context.read<PostCubit>().createPost(
+      widget.user,
+      _controller.text,
+      widget.selectedImages,
+    );
+    context.read<GalleryCubit>().reset();
+    context.read<NavigationCubit>().navigateToHome();
+  }
+
+  Future<bool?> _showDiscardDialog(BuildContext context) async {
+    return showAdaptiveDialog(
+      context: context,
+      builder: (context) {
+        return AlertDialog(
+          title: const Text('Discard Post?'),
+          content: const Text('Are you sure you want to discard?'),
+          actions: [
+            TextButton(
+              onPressed: () => Navigator.of(context).pop(false),
+              child: const Text('Cancel'),
+            ),
+            TextButton(
+              onPressed: () {
+                Navigator.of(context).pop(true);
+              },
+              child: const Text('Discard'),
+            ),
+          ],
+        );
+      },
     );
   }
 }

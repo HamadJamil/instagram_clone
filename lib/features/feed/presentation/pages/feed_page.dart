@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
+import 'package:instagram/core/utils/toast.dart';
 import 'package:instagram/features/feed/presentation/cubits/feed/feed_cubit.dart';
 import 'package:instagram/features/feed/presentation/cubits/feed/feed_state.dart';
 import 'package:instagram/features/feed/presentation/widgets/post_tile.dart';
@@ -46,9 +47,7 @@ class _FeedPageState extends State<FeedPage> {
       body: BlocConsumer<FeedCubit, FeedState>(
         listener: (context, state) {
           if (state is FeedError) {
-            ScaffoldMessenger.of(
-              context,
-            ).showSnackBar(SnackBar(content: Text(state.message)));
+            ToastUtils.showErrorToast(context, state.message);
           }
         },
         builder: (context, state) {

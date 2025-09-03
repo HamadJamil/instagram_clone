@@ -46,7 +46,6 @@ class OtherUserProfileCubit extends Cubit<OtherUserProfileState> {
     try {
       await _userRepository.follow(currentUserId, targetUserId);
 
-      // Update local state
       final updatedUser = currentState.user.copyWith(
         followers: [...currentState.user.followers ?? [], currentUserId],
       );

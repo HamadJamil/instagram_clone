@@ -48,6 +48,7 @@ dependencies:
   equatable: ^2.0.7
   get_time_ago: ^2.3.2
   firebase_messaging: ^16.0.1
+  flutter_styled_toast: ^2.2.1
 
 dev_dependencies:
   flutter_test:

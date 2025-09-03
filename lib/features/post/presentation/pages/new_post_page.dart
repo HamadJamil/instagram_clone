@@ -5,40 +5,26 @@ import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:go_router/go_router.dart';
 import 'package:instagram/core/routes/app_route_name.dart';
 import 'package:instagram/core/theme/app_colors.dart';
+import 'package:instagram/core/utils/toast.dart';
+import 'package:instagram/core/utils/utils.dart';
 import 'package:instagram/features/post/presentation/cubits/gallery/gallery_cubit.dart';
 import 'package:instagram/features/post/presentation/cubits/gallery/gallery_state.dart';
 import 'package:instagram/features/post/presentation/widgets/asset_thumbnail.dart';
 import 'package:photo_manager/photo_manager.dart';
 
-class PostPage extends StatefulWidget {
-  const PostPage({super.key, required this.userId});
+class NewPostPage extends StatefulWidget {
+  const NewPostPage({super.key, required this.userId});
   final String userId;
 
   @override
-  State<PostPage> createState() => _PostPageState();
+  State<NewPostPage> createState() => _NewPostPageState();
 }
 
-class _PostPageState extends State<PostPage> {
-  final ScrollController _scrollController = ScrollController();
-
+class _NewPostPageState extends State<NewPostPage> {
   @override
   void initState() {
     super.initState();
     context.read<GalleryCubit>().loadGalleryImages();
-    _scrollController.addListener(_onScroll);
-  }
-
-  void _onScroll() {
-    if (_scrollController.position.pixels ==
-        _scrollController.position.maxScrollExtent) {
-      context.read<GalleryCubit>().loadMoreImages();
-    }
-  }
-
-  @override
-  void dispose() {
-    _scrollController.dispose();
-    super.dispose();
   }
 
   @override
@@ -59,13 +45,19 @@ class _PostPageState extends State<PostPage> {
             builder: (context, selectedAssets) {
               return TextButton(
                 onPressed: selectedAssets.isNotEmpty
-                    ? () => context.pushNamed(
-                        AppRouteName.postCaptionPage,
-                        extra: {
-                          'selectedImages': selectedAssets,
-                          'userId': widget.userId,
-                        },
-                      )
+                    ? () async {
+                        final imageFiles =
+                            await convertAssetEntityListToFileList(
+                              selectedAssets,
+                            );
+                        context.pushNamed(
+                          AppRouteName.postCaptionPage,
+                          extra: {
+                            'selectedImages': imageFiles,
+                            'userId': widget.userId,
+                          },
+                        );
+                      }
                     : null,
                 child: const Text(
                   "Next",
@@ -82,15 +74,10 @@ class _PostPageState extends State<PostPage> {
       body: BlocConsumer<GalleryCubit, GalleryState>(
         listener: (context, state) {
           if (state is GalleryError) {
-            ScaffoldMessenger.of(
-              context,
-            ).showSnackBar(SnackBar(content: Text(state.message)));
+            ToastUtils.showErrorToast(context, state.message);
           }
           if (state is GalleryPermissionDenied) {
-            ScaffoldMessenger.of(context).showSnackBar(
-              const SnackBar(content: Text('Gallery permission denied')),
-            );
-            Navigator.of(context).pop();
+            ToastUtils.showErrorToast(context, 'Gallery permission denied');
           }
         },
         builder: (context, state) {
@@ -99,7 +86,6 @@ class _PostPageState extends State<PostPage> {
           }
 
           if (state is GalleryLoaded || state is GalleryLoadingMore) {
-            // Extract data with proper type checking
             final assets = state is GalleryLoaded
                 ? state.assets
                 : (state as GalleryLoadingMore).assets;
@@ -113,9 +99,7 @@ class _PostPageState extends State<PostPage> {
             final isLoadingMore = state is GalleryLoadingMore;
 
             return CustomScrollView(
-              controller: _scrollController,
               slivers: [
-                // Selected image preview
                 SliverToBoxAdapter(
                   child: SizedBox(
                     height: size.height * 0.5,
@@ -123,7 +107,6 @@ class _PostPageState extends State<PostPage> {
                   ),
                 ),
 
-                // Header with multi-selection toggle
                 SliverAppBar(
                   titleSpacing: 5,
                   title: Row(
@@ -133,22 +116,14 @@ class _PostPageState extends State<PostPage> {
                       IconButton(
                         icon: Icon(
                           isMultiSelection
-                              ? Icons.check_box
-                              : Icons.check_box_outline_blank,
+                              ? Icons.copy_outlined
+                              : Icons.copy_outlined,
                           color: isMultiSelection
                               ? AppColors.primary
                               : Colors.grey,
                         ),
                         onPressed: () {
-                          if (isMultiSelection) {
-                            // Turn off multi-selection and clear extra selections
-                            context
-                                .read<GalleryCubit>()
-                                .clearSelectionsExceptFirst();
-                          } else {
-                            // Turn on multi-selection
-                            context.read<GalleryCubit>().toggleMultiSelection();
-                          }
+                          context.read<GalleryCubit>().toggleMultiSelection();
                         },
                       ),
                     ],
@@ -158,7 +133,6 @@ class _PostPageState extends State<PostPage> {
                   pinned: true,
                 ),
 
-                // Gallery grid
                 SliverGrid.builder(
                   gridDelegate: const SliverGridDelegateWithFixedCrossAxisCount(
                     crossAxisCount: 4,
@@ -166,21 +140,8 @@ class _PostPageState extends State<PostPage> {
                     crossAxisSpacing: 1,
                     mainAxisSpacing: 1,
                   ),
-                  itemCount: assets.length + (hasMore ? 1 : 0),
+                  itemCount: assets.length,
                   itemBuilder: (context, index) {
-                    if (index == assets.length) {
-                      return Center(
-                        child: isLoadingMore
-                            ? CircularProgressIndicator()
-                            : ElevatedButton(
-                                onPressed: () => context
-                                    .read<GalleryCubit>()
-                                    .loadMoreImages(),
-                                child: Text('Load More'),
-                              ),
-                      );
-                    }
-
                     final asset = assets[index];
                     final isSelected = selectedAssets.contains(asset);
 
@@ -191,6 +152,7 @@ class _PostPageState extends State<PostPage> {
                         );
                       },
                       child: Stack(
+                        fit: StackFit.expand,
                         children: [
                           AssetThumbnail(asset: asset),
                           if (isSelected)
@@ -229,6 +191,21 @@ class _PostPageState extends State<PostPage> {
                     );
                   },
                 ),
+
+                SliverToBoxAdapter(
+                  child: hasMore
+                      ? Center(
+                          child: isLoadingMore
+                              ? CircularProgressIndicator()
+                              : TextButton(
+                                  onPressed: () => context
+                                      .read<GalleryCubit>()
+                                      .loadMoreImages(),
+                                  child: Text('See More'),
+                                ),
+                        )
+                      : SizedBox.shrink(),
+                ),
               ],
             );
           }
@@ -261,12 +238,10 @@ class _PostPageState extends State<PostPage> {
       return const Center(child: Icon(Icons.image, size: 64));
     }
 
-    return PageView.builder(
-      itemCount: selectedAssets.length,
-      itemBuilder: (context, index) {
-        final asset = selectedAssets[index];
-        return FutureBuilder<File?>(
-          future: asset.file,
+    return PageView(
+      children: [
+        FutureBuilder<File?>(
+          future: selectedAssets.last.file,
           builder: (context, snapshot) {
             if (snapshot.connectionState == ConnectionState.waiting) {
               return Center(child: CircularProgressIndicator());
@@ -277,10 +252,10 @@ class _PostPageState extends State<PostPage> {
               return Center(child: Icon(Icons.error));
             }
 
-            return Image.file(file, fit: BoxFit.cover);
+            return Image.file(file, fit: BoxFit.fitHeight);
           },
-        );
-      },
+        ),
+      ],
     );
   }
 }

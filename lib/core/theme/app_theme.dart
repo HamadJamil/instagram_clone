@@ -4,6 +4,7 @@ import 'app_colors.dart';
 class AppTheme {
   AppTheme._();
   static final ThemeData light = ThemeData(
+    brightness: Brightness.light,
     scaffoldBackgroundColor: AppColors.surfaceLight,
     useMaterial3: true,
     appBarTheme: const AppBarTheme(
@@ -29,9 +30,25 @@ class AppTheme {
     ),
 
     inputDecorationTheme: const InputDecorationTheme(
-      contentPadding: EdgeInsets.symmetric(horizontal: 12.0, vertical: 4.0),
+      contentPadding: EdgeInsets.symmetric(horizontal: 12.0, vertical: 12.0),
       labelStyle: TextStyle(color: AppColors.grey),
-      border: InputBorder.none,
+      floatingLabelStyle: TextStyle(backgroundColor: Colors.transparent),
+      border: OutlineInputBorder(
+        borderRadius: BorderRadius.all(Radius.circular(12.0)),
+        borderSide: BorderSide(color: AppColors.grey),
+      ),
+      enabledBorder: OutlineInputBorder(
+        borderRadius: BorderRadius.all(Radius.circular(12.0)),
+        borderSide: BorderSide(color: AppColors.grey),
+      ),
+      focusedBorder: OutlineInputBorder(
+        borderRadius: BorderRadius.all(Radius.circular(12.0)),
+        borderSide: BorderSide(color: AppColors.primary),
+      ),
+      errorBorder: OutlineInputBorder(
+        borderRadius: BorderRadius.all(Radius.circular(12.0)),
+        borderSide: BorderSide(color: Colors.red),
+      ),
     ),
 
     filledButtonTheme: FilledButtonThemeData(
@@ -92,6 +109,7 @@ class AppTheme {
   );
 
   static final ThemeData dark = ThemeData(
+    brightness: Brightness.dark,
     scaffoldBackgroundColor: AppColors.surfaceDark,
     useMaterial3: true,
     appBarTheme: AppBarTheme(

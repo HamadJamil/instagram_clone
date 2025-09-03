@@ -9,7 +9,6 @@ import 'package:instagram/core/repository/user_repository.dart';
 import 'package:instagram/core/theme/app_colors.dart';
 import 'package:instagram/features/feed/presentation/cubits/comment/comment_cubit.dart';
 import 'package:instagram/features/feed/presentation/cubits/feed/feed_cubit.dart';
-import 'package:instagram/features/feed/presentation/cubits/feed/feed_state.dart';
 
 import 'package:instagram/features/feed/presentation/widgets/comment_section.dart';
 
@@ -20,250 +19,281 @@ class PostTile extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    return _PostTileContent(post: post, currentUserId: currentUserId);
-  }
-}
-
-class _PostTileContent extends StatelessWidget {
-  const _PostTileContent({required this.post, required this.currentUserId});
-  final PostModel post;
-  final String currentUserId;
-
-  @override
-  Widget build(BuildContext context) {
-    final feedState = context.watch<FeedCubit>().state;
-    final isUpdating = feedState is FeedLoadingMore;
-
-    return _buildPostContent(context, isUpdating);
+    return _buildPostContent(context);
   }
 
-  Widget _buildPostContent(BuildContext context, bool isUpdating) {
+  Widget _buildPostContent(BuildContext context) {
     final theme = Theme.of(context);
+    final isDark = theme.brightness == Brightness.dark;
     final isMultiImage = post.imageUrls.length > 1;
     final commentCount = post.comments ?? 0;
     final isLiked = post.isLikedBy(currentUserId);
     final likesCount = post.likesCount;
+    int currentPageIndex = 1;
 
-    return Container(
-      color: Colors.white,
-      margin: const EdgeInsets.only(bottom: 12),
-      child: Column(
-        crossAxisAlignment: CrossAxisAlignment.start,
-        children: [
-          // Header with user info
-          Padding(
-            padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 8),
-            child: Row(
-              children: [
-                CircleAvatar(
-                  radius: 24,
-                  backgroundColor: AppColors.grey400,
-                  child: ClipOval(
-                    child: post.authorImage != null
-                        ? CachedNetworkImage(
-                            imageUrl: post.authorImage!,
-                            width: 44,
-                            height: 44,
-                            fit: BoxFit.cover,
-                            placeholder: (context, url) =>
-                                Container(color: Colors.grey[200]),
-                            errorWidget: (context, url, error) =>
-                                const Icon(Icons.person, size: 18),
-                          )
-                        : const Icon(Icons.person, size: 18),
-                  ),
-                ),
-                const SizedBox(width: 12),
-                Expanded(
-                  child: Text(
-                    post.authorName,
-                    style: const TextStyle(
-                      fontWeight: FontWeight.w600,
-                      fontSize: 14,
-                    ),
-                  ),
-                ),
-                IconButton(
-                  icon: const Icon(Icons.more_vert, size: 20),
-                  onPressed: () {},
-                  padding: EdgeInsets.zero,
-                  constraints: const BoxConstraints(),
-                ),
-              ],
-            ),
-          ),
-
-          // Post images
-          Stack(
+    return StatefulBuilder(
+      builder: (context, setLocalState) {
+        return Container(
+          color: isDark ? AppColors.surfaceDark : AppColors.surfaceLight,
+          margin: const EdgeInsets.only(bottom: 4),
+          child: Column(
+            crossAxisAlignment: CrossAxisAlignment.start,
             children: [
-              Container(
-                height: 375,
-                width: double.infinity,
-                color: AppColors.grey400,
-                child: GestureDetector(
-                  onDoubleTap: () {
-                    if (!isLiked) {
-                      context.read<FeedCubit>().toggleLike(post.id);
-                      _showLikeAnimation(context);
-                    }
-                  },
-                  child: isMultiImage
-                      ? PageView.builder(
-                          itemCount: post.imageUrls.length,
-                          itemBuilder: (context, index) {
-                            return CachedNetworkImage(
-                              imageUrl: post.imageUrls[index],
-                              fit: BoxFit.cover,
-                              placeholder: (context, url) =>
-                                  Container(color: Colors.grey[200]),
-                              errorWidget: (context, url, error) =>
-                                  const Icon(Icons.error),
-                            );
-                          },
-                        )
-                      : CachedNetworkImage(
-                          imageUrl: post.imageUrls.first,
-                          fit: BoxFit.cover,
-                          placeholder: (context, url) =>
-                              Container(color: Colors.grey[200]),
-                          errorWidget: (context, url, error) =>
-                              const Icon(Icons.error),
+              Padding(
+                padding: const EdgeInsets.symmetric(
+                  horizontal: 12,
+                  vertical: 8,
+                ),
+                child: Row(
+                  children: [
+                    CircleAvatar(
+                      radius: 24,
+                      backgroundColor: theme.colorScheme.onSurface.withValues(
+                        alpha: 0.1,
+                      ),
+                      child: ClipOval(
+                        child: post.authorImage != null
+                            ? CachedNetworkImage(
+                                imageUrl: post.authorImage!,
+                                width: 44,
+                                height: 44,
+                                fit: BoxFit.cover,
+                                placeholder: (context, url) =>
+                                    Container(color: theme.colorScheme.surface),
+                                errorWidget: (context, url, error) => Icon(
+                                  Icons.person,
+                                  size: 18,
+                                  color: theme.colorScheme.onSurface,
+                                ),
+                              )
+                            : Icon(
+                                Icons.person,
+                                size: 18,
+                                color: theme.colorScheme.onSurface,
+                              ),
+                      ),
+                    ),
+                    const SizedBox(width: 12),
+                    Expanded(
+                      child: Text(
+                        post.authorName,
+                        style: TextStyle(
+                          fontWeight: FontWeight.w600,
+                          fontSize: 14,
+                          color: theme.colorScheme.onSurface,
                         ),
+                      ),
+                    ),
+                  ],
                 ),
               ),
-              if (isMultiImage)
-                Positioned(
-                  top: 12,
-                  right: 12,
-                  child: Container(
-                    padding: const EdgeInsets.symmetric(
-                      horizontal: 8,
-                      vertical: 4,
-                    ),
-                    decoration: BoxDecoration(
-                      color: Colors.black54,
-                      borderRadius: BorderRadius.circular(12),
-                    ),
-                    child: Text(
-                      '1/${post.imageUrls.length}',
-                      style: const TextStyle(
-                        color: Colors.white,
-                        fontSize: 12,
-                        fontWeight: FontWeight.w500,
-                      ),
+
+              Stack(
+                children: [
+                  Container(
+                    height: 375,
+                    width: double.infinity,
+                    color: theme.colorScheme.surface.withValues(alpha: .5),
+                    child: GestureDetector(
+                      onDoubleTap: () {
+                        if (!isLiked) {
+                          context.read<FeedCubit>().toggleLike(post.id);
+                          _showLikeAnimation(context);
+                        }
+                      },
+                      child: isMultiImage
+                          ? PageView.builder(
+                              onPageChanged: (value) {
+                                setLocalState(() {
+                                  currentPageIndex = value + 1;
+                                });
+                              },
+                              itemCount: post.imageUrls.length,
+                              itemBuilder: (context, index) {
+                                return CachedNetworkImage(
+                                  imageUrl: post.imageUrls[index],
+                                  fit: BoxFit.cover,
+                                  placeholder: (context, url) => Container(
+                                    color: theme.colorScheme.surface,
+                                  ),
+                                  errorWidget: (context, url, error) => Icon(
+                                    Icons.error,
+                                    color: theme.colorScheme.onSurface,
+                                  ),
+                                );
+                              },
+                            )
+                          : CachedNetworkImage(
+                              imageUrl: post.imageUrls.first,
+                              fit: BoxFit.cover,
+                              placeholder: (context, url) =>
+                                  Container(color: theme.colorScheme.surface),
+                              errorWidget: (context, url, error) => Icon(
+                                Icons.error,
+                                color: theme.colorScheme.onSurface,
+                              ),
+                            ),
                     ),
                   ),
-                ),
-            ],
-          ),
+                  if (isMultiImage)
+                    Positioned(
+                      top: 12,
+                      right: 12,
+                      child: Container(
+                        padding: const EdgeInsets.symmetric(
+                          horizontal: 8,
+                          vertical: 4,
+                        ),
+                        decoration: BoxDecoration(
+                          color: Colors.black54,
+                          borderRadius: BorderRadius.circular(12),
+                        ),
+                        child: Text(
+                          '$currentPageIndex/${post.imageUrls.length}',
+                          style: const TextStyle(
+                            color: Colors.white,
+                            fontSize: 12,
+                            fontWeight: FontWeight.w500,
+                          ),
+                        ),
+                      ),
+                    ),
+                ],
+              ),
 
-          // Action buttons
-          Padding(
-            padding: const EdgeInsets.only(left: 8, right: 8, top: 4),
-            child: Row(
-              mainAxisAlignment: MainAxisAlignment.spaceBetween,
-              children: [
-                Row(
+              Padding(
+                padding: const EdgeInsets.only(left: 8, right: 8, top: 4),
+                child: Row(
+                  mainAxisAlignment: MainAxisAlignment.spaceBetween,
                   children: [
+                    Row(
+                      children: [
+                        Row(
+                          children: [
+                            IconButton(
+                              icon: Icon(
+                                isLiked
+                                    ? Icons.favorite
+                                    : Icons.favorite_border,
+                                size: 28,
+                                color: isLiked
+                                    ? Colors.red
+                                    : theme.colorScheme.onSurface,
+                              ),
+                              onPressed: () =>
+                                  context.read<FeedCubit>().toggleLike(post.id),
+                              padding: EdgeInsets.zero,
+                            ),
+                            if (likesCount > 0)
+                              Text(
+                                '$likesCount',
+                                style: TextStyle(
+                                  fontWeight: FontWeight.w600,
+                                  fontSize: 16,
+                                  color: theme.colorScheme.onSurface,
+                                ),
+                              ),
+                          ],
+                        ),
+                        const SizedBox(width: 4),
+                        Row(
+                          children: [
+                            IconButton(
+                              icon: Icon(
+                                Icons.mode_comment_outlined,
+                                size: 28,
+                                color: theme.colorScheme.onSurface,
+                              ),
+                              onPressed: () {
+                                _showCommentsSection(context);
+                              },
+                              padding: EdgeInsets.zero,
+                            ),
+                            if (commentCount > 0)
+                              Text(
+                                '$commentCount',
+                                style: TextStyle(
+                                  fontWeight: FontWeight.w600,
+                                  fontSize: 16,
+                                  color: theme.colorScheme.onSurface,
+                                ),
+                              ),
+                          ],
+                        ),
+                        const SizedBox(width: 4),
+                        IconButton(
+                          icon: Icon(
+                            Icons.send_outlined,
+                            size: 28,
+                            color: theme.colorScheme.onSurface,
+                          ),
+                          onPressed: () {},
+                          padding: EdgeInsets.zero,
+                        ),
+                      ],
+                    ),
                     IconButton(
                       icon: Icon(
-                        isLiked ? Icons.favorite : Icons.favorite_border,
+                        Icons.bookmark_border,
                         size: 28,
-                        color: isLiked ? Colors.red : null,
+                        color: theme.colorScheme.onSurface,
                       ),
-                      onPressed: () =>
-                          context.read<FeedCubit>().toggleLike(post.id),
-                      padding: EdgeInsets.zero,
-                    ),
-                    const SizedBox(width: 4),
-                    IconButton(
-                      icon: const Icon(Icons.mode_comment_outlined, size: 28),
-                      onPressed: () {
-                        _showCommentsSection(context);
-                      },
-                      padding: EdgeInsets.zero,
-                    ),
-                    const SizedBox(width: 4),
-                    IconButton(
-                      icon: const Icon(Icons.send_outlined, size: 28),
                       onPressed: () {},
                       padding: EdgeInsets.zero,
                     ),
                   ],
                 ),
-                IconButton(
-                  icon: const Icon(Icons.bookmark_border, size: 28),
-                  onPressed: () {},
-                  padding: EdgeInsets.zero,
-                ),
-              ],
-            ),
-          ),
-
-          // Likes count
-          if (likesCount > 0)
-            Padding(
-              padding: const EdgeInsets.symmetric(horizontal: 16),
-              child: Text(
-                '$likesCount ${likesCount == 1 ? 'like' : 'likes'}',
-                style: const TextStyle(
-                  fontWeight: FontWeight.w600,
-                  fontSize: 14,
-                ),
               ),
-            ),
 
-          // Caption with username
-          if (post.caption != null && post.caption!.isNotEmpty)
-            Padding(
-              padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 4),
-              child: RichText(
-                text: TextSpan(
-                  children: [
-                    TextSpan(
-                      text: '${post.authorName} ',
-                      style: TextStyle(
-                        fontWeight: FontWeight.w600,
-                        color: theme.colorScheme.onSurface,
-                        fontSize: 14,
-                      ),
+              if (post.caption != null && post.caption!.isNotEmpty)
+                Padding(
+                  padding: const EdgeInsets.symmetric(
+                    horizontal: 16,
+                    vertical: 4,
+                  ),
+                  child: RichText(
+                    text: TextSpan(
+                      children: [
+                        TextSpan(
+                          text: '${post.authorName} ',
+                          style: TextStyle(
+                            fontWeight: FontWeight.w600,
+                            color: theme.colorScheme.onSurface,
+                            fontSize: 14,
+                          ),
+                        ),
+                        TextSpan(
+                          text: post.caption!,
+                          style: TextStyle(
+                            color: theme.colorScheme.onSurface.withValues(
+                              alpha: 0.8,
+                            ),
+                            fontSize: 14,
+                          ),
+                        ),
+                      ],
                     ),
-                    TextSpan(
-                      text: post.caption!,
-                      style: TextStyle(
-                        color: theme.colorScheme.onSurface,
-                        fontSize: 14,
-                      ),
-                    ),
-                  ],
+                  ),
                 ),
-              ),
-            ),
 
-          // Comments preview
-          if (commentCount > 0)
-            Padding(
-              padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 2),
-              child: GestureDetector(
-                onTap: () => _showCommentsSection(context),
+              Padding(
+                padding: const EdgeInsets.symmetric(
+                  horizontal: 16,
+                  vertical: 2,
+                ),
                 child: Text(
-                  'View all $commentCount comments',
-                  style: TextStyle(color: Colors.grey[600], fontSize: 14),
+                  GetTimeAgo.parse(post.createdAt),
+                  style: TextStyle(
+                    color: theme.colorScheme.onSurface.withValues(alpha: .5),
+                    fontSize: 12,
+                  ),
                 ),
               ),
-            ),
-
-          // Timestamp
-          Padding(
-            padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 2),
-            child: Text(
-              GetTimeAgo.parse(post.createdAt),
-              style: TextStyle(color: Colors.grey[500], fontSize: 12),
-            ),
+              const SizedBox(height: 8),
+            ],
           ),
-          const SizedBox(height: 8),
-        ],
-      ),
+        );
+      },
     );
   }
 

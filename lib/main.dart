@@ -4,6 +4,7 @@ import 'package:firebase_core/firebase_core.dart';
 import 'package:firebase_storage/firebase_storage.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
+import 'package:instagram/core/repository/comment_repository.dart';
 import 'package:instagram/core/repository/post_repository.dart';
 import 'package:instagram/core/repository/strorage_repository.dart';
 import 'package:instagram/core/repository/user_repository.dart';
@@ -16,8 +17,9 @@ import 'package:instagram/features/auth/data/repositories/auth_repository_implem
 import 'package:instagram/features/auth/domain/repositories/auth_repository.dart';
 import 'package:instagram/features/auth/presentation/cubits/auth_cubit.dart';
 import 'package:instagram/features/feed/presentation/cubits/feed/feed_cubit.dart';
+import 'package:instagram/features/home_cubit.dart';
 import 'package:instagram/features/post/presentation/cubits/gallery/gallery_cubit.dart';
-import 'package:instagram/features/post/presentation/cubits/post_cubit.dart';
+import 'package:instagram/features/post/presentation/cubits/post/post_cubit.dart';
 import 'package:instagram/features/search/presentation/cubits/otheruser/otheruser_cubit.dart';
 import 'package:instagram/features/search/presentation/cubits/search/search_cubit.dart';
 import 'package:instagram/firebase_options.dart';
@@ -36,6 +38,7 @@ Future<void> main() async {
 
     final UserRepository userRepository = UserRepository(firestore);
     final PostRepository postRepository = PostRepository(firestore);
+    final CommentRepository commentRepository = CommentRepository(firestore);
     final StorageRepository storageRepository = StorageRepository(storage);
 
     final FirebaseAuthService authService = FirebaseAuthService(auth);
@@ -47,13 +50,14 @@ Future<void> main() async {
     runApp(
       MultiBlocProvider(
         providers: [
+          BlocProvider(create: (context) => NavigationCubit()),
+          BlocProvider(create: (context) => GalleryCubit()),
           BlocProvider(
             create: (context) => OtherUserProfileCubit(
               userRepository: userRepository,
               postRepository: postRepository,
             ),
           ),
-          BlocProvider(create: (context) => GalleryCubit()),
           BlocProvider(
             create: (context) => AuthCubit(authRepository: authRepository),
           ),
@@ -63,6 +67,7 @@ Future<void> main() async {
               userRepository,
               postRepository,
               storageRepository,
+              commentRepository,
             ),
           ),
           BlocProvider(create: (context) => SearchCubit(userRepository)),
@@ -71,8 +76,12 @@ Future<void> main() async {
                 FeedCubit(postRepository, auth.currentUser!.uid),
           ),
           BlocProvider(
-            create: (context) =>
-                PostCubit(postRepository, storageRepository, userRepository),
+            create: (context) => PostCubit(
+              postRepository,
+              storageRepository,
+              userRepository,
+              commentRepository,
+            ),
           ),
         ],
         child: const MyApp(),

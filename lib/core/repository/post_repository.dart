@@ -11,53 +11,83 @@ class PostRepository {
     int limit = 10,
     DocumentSnapshot? lastDocument,
   }) {
-    var query = _firestore
-        .collection('posts')
-        .orderBy('createdAt', descending: true)
-        .limit(limit);
+    try {
+      var query = _firestore
+          .collection('posts')
+          .orderBy('createdAt', descending: true)
+          .limit(limit);
 
-    if (lastDocument != null) {
-      query = query.startAfterDocument(lastDocument);
+      if (lastDocument != null) {
+        query = query.startAfterDocument(lastDocument);
+      }
+
+      return query.snapshots().map((snapshot) {
+        return snapshot.docs.map((doc) {
+          return PostModel.fromJson(doc.data());
+        }).toList();
+      });
+    } catch (e) {
+      throw Exception(
+        'Unable to load posts. Please check your internet connection and try again.',
+      );
     }
-
-    return query.snapshots().map((snapshot) {
-      return snapshot.docs.map((doc) {
-        return PostModel.fromJson(doc.data());
-      }).toList();
-    });
   }
 
   Future<List<PostModel>> loadMorePosts({
     required DocumentSnapshot lastDocument,
     int limit = 10,
   }) async {
-    final snapshot = await _firestore
-        .collection('posts')
-        .orderBy('createdAt', descending: true)
-        .startAfterDocument(lastDocument)
-        .limit(limit)
-        .get();
+    try {
+      final snapshot = await _firestore
+          .collection('posts')
+          .orderBy('createdAt', descending: true)
+          .startAfterDocument(lastDocument)
+          .limit(limit)
+          .get();
 
-    return snapshot.docs.map((doc) {
-      return PostModel.fromJson(doc.data());
-    }).toList();
+      return snapshot.docs.map((doc) {
+        return PostModel.fromJson(doc.data());
+      }).toList();
+    } catch (e) {
+      throw Exception('Failed to load more posts. Please try again later.');
+    }
   }
 
   Future<DocumentSnapshot?> getLastDocument({int limit = 10}) async {
-    final snapshot = await _firestore
-        .collection('posts')
-        .orderBy('createdAt', descending: true)
-        .limit(limit)
-        .get();
+    try {
+      final snapshot = await _firestore
+          .collection('posts')
+          .orderBy('createdAt', descending: true)
+          .limit(limit)
+          .get();
 
-    return snapshot.docs.length == limit ? snapshot.docs.last : null;
+      return snapshot.docs.length == limit ? snapshot.docs.last : null;
+    } catch (e) {
+      throw Exception('Could not retrieve post information. Please try again.');
+    }
   }
 
   Future<void> create(PostModel post) async {
     try {
       await _firestore.collection('posts').doc(post.id).set(post.toJson());
     } catch (e) {
-      throw Exception('FirestorePostService: Error creating post: $e');
+      throw Exception('Unable to create your post. ');
+    }
+  }
+
+  Future<void> delete(String postId) async {
+    try {
+      await _firestore.collection('posts').doc(postId).delete();
+    } catch (e) {
+      throw Exception('Could not delete the post. ');
+    }
+  }
+
+  Future<void> update(PostModel post) async {
+    try {
+      await _firestore.collection('posts').doc(post.id).update(post.toJson());
+    } catch (e) {
+      throw Exception('Unable to update your post. ');
     }
   }
 
@@ -72,25 +102,32 @@ class PostRepository {
           .map((doc) => PostModel.fromJson(doc.data()))
           .toList();
     } catch (e) {
-      throw Exception('FirestoreProfileService :Failed to get user posts: $e');
+      throw Exception(
+        'Could not load user posts. Please try refreshing the page.',
+      );
     }
   }
 
-  Future<void> changeAuthorDetails(UserModel updatedUser) async {
+  Future<void> updateAuthorDetails(UserModel updatedUser) async {
     try {
-      final references = await _firestore
+      final batch = _firestore.batch();
+
+      final postRef = _firestore
           .collection('posts')
-          .where('authorId', isEqualTo: updatedUser.uid)
-          .get();
-      for (var doc in references.docs) {
-        await doc.reference.update({
+          .where('authorId', isEqualTo: updatedUser.uid);
+
+      final snapshot = await postRef.get();
+
+      for (var doc in snapshot.docs) {
+        batch.update(doc.reference, {
           'authorName': updatedUser.name,
-          'authorImage': updatedUser.photoUrl,
+          'authorAvatar': updatedUser.photoUrl,
         });
       }
+      await batch.commit();
     } catch (e) {
       throw Exception(
-        'FirestorePostService: Error changing author details: $e',
+        'Unable to update profile information across posts. Please try again.',
       );
     }
   }
@@ -101,7 +138,7 @@ class PostRepository {
         'likes': FieldValue.arrayUnion([userId]),
       });
     } catch (e) {
-      throw Exception('FirestorePostService: Error liking post: $e');
+      throw Exception('Could not like the post. ');
     }
   }
 
@@ -111,11 +148,17 @@ class PostRepository {
         'likes': FieldValue.arrayRemove([userId]),
       });
     } catch (e) {
-      throw Exception('FirestorePostService: Error unliking post: $e');
+      throw Exception('Could not unlike the post. Please try again.');
     }
   }
 
   Stream<DocumentSnapshot<Map<String, dynamic>>> postStream(String postId) {
-    return _firestore.collection('posts').doc(postId).snapshots();
+    try {
+      return _firestore.collection('posts').doc(postId).snapshots();
+    } catch (e) {
+      throw Exception(
+        'Unable to load post details. Please check your connection.',
+      );
+    }
   }
 }

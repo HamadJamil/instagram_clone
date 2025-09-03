@@ -40,6 +40,8 @@ class _CommentInputState extends State<CommentInput> {
               controller: textController,
               decoration: InputDecoration(
                 border: InputBorder.none,
+                focusedBorder: InputBorder.none,
+                enabledBorder: InputBorder.none,
                 contentPadding: const EdgeInsets.symmetric(vertical: 12),
                 hintText: 'Add a comment...',
                 prefixIcon: Container(

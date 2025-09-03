@@ -3,6 +3,7 @@ import 'dart:io';
 
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:instagram/core/models/user_model.dart';
+import 'package:instagram/core/repository/comment_repository.dart';
 import 'package:instagram/core/repository/post_repository.dart';
 import 'package:instagram/core/repository/strorage_repository.dart';
 import 'package:instagram/core/repository/user_repository.dart';
@@ -13,6 +14,7 @@ class ProfileCubit extends Cubit<ProfileState> {
   final AuthRepository _authRepository;
   final UserRepository _userRepository;
   final PostRepository _postRepository;
+  final CommentRepository _commentRepository;
   final StorageRepository _storageRepository;
 
   ProfileCubit(
@@ -20,6 +22,7 @@ class ProfileCubit extends Cubit<ProfileState> {
     this._userRepository,
     this._postRepository,
     this._storageRepository,
+    this._commentRepository,
   ) : super(ProfileInitial());
 
   Future<void> load(String userId) async {
@@ -55,7 +58,8 @@ class ProfileCubit extends Cubit<ProfileState> {
         await _userRepository.update(updatedUser);
 
         emit(currentState.copyWith(user: updatedUser));
-        _postRepository.changeAuthorDetails(updatedUser);
+        _postRepository.updateAuthorDetails(updatedUser);
+        _commentRepository.updateAuthorDetails(updatedUser);
       } catch (e) {
         emit(ProfileError(message: e.toString()));
         emit(currentState);

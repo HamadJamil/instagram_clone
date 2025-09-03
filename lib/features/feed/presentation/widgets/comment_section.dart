@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:instagram/core/models/post_model.dart';
+import 'package:instagram/core/utils/toast.dart';
 import 'package:instagram/features/feed/presentation/cubits/comment/comment_cubit.dart';
 import 'package:instagram/features/feed/presentation/cubits/comment/comment_state.dart';
 import 'package:instagram/features/feed/presentation/widgets/comment_input.dart';
@@ -21,9 +22,7 @@ class CommentSection extends StatelessWidget {
     return BlocConsumer<CommentCubit, CommentState>(
       listener: (context, state) {
         if (state is CommentError) {
-          ScaffoldMessenger.of(
-            context,
-          ).showSnackBar(SnackBar(content: Text(state.message)));
+          ToastUtils.showErrorToast(context, state.message);
         }
       },
       builder: (context, state) {

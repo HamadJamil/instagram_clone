@@ -40,4 +40,15 @@ class StorageRepository {
       throw Exception('StorageRepository: Error uploading profile photo: $e');
     }
   }
+
+  Future<void> deleteImages(List<String> imageUrls) async {
+    try {
+      for (String url in imageUrls) {
+        final ref = _storage.refFromURL(url);
+        await ref.delete();
+      }
+    } catch (e) {
+      throw Exception('StorageRepository: Error deleting images: $e');
+    }
+  }
 }

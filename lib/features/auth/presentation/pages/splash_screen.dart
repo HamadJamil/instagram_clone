@@ -5,6 +5,7 @@ import 'package:instagram/core/constants/app_images.dart';
 import 'package:instagram/core/routes/app_route_name.dart';
 import 'package:instagram/features/auth/presentation/cubits/auth_cubit.dart';
 import 'package:instagram/features/auth/presentation/cubits/auth_state.dart';
+import 'package:instagram/features/home_cubit.dart';
 
 class SplashScreen extends StatefulWidget {
   const SplashScreen({super.key});
@@ -52,6 +53,7 @@ class _SplashScreenState extends State<SplashScreen> {
   void _handleAuthState(AuthState authState) {
     if (authState is AuthSuccess && authState.isEmailVerified) {
       final String? userId = authState.userId;
+      context.read<NavigationCubit>().navigateToHome();
       return context.goNamed(
         AppRouteName.home,
         pathParameters: {'userId': userId!},

@@ -1,8 +1,8 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
-import 'package:instagram/core/models/post_model.dart';
-import 'package:instagram/features/feed/presentation/widgets/post_tile.dart';
+import 'package:instagram/core/utils/toast.dart';
 import 'package:instagram/features/profile/presentation/widgets/post_card.dart';
+import 'package:instagram/features/profile/presentation/pages/post_detail_screen.dart';
 import 'package:instagram/features/profile/presentation/widgets/stat_item.dart';
 import 'package:instagram/features/search/presentation/cubits/otheruser/otherUser_state.dart';
 import 'package:instagram/features/search/presentation/cubits/otheruser/otheruser_cubit.dart';
@@ -36,9 +36,7 @@ class _OtherUserProfilePageState extends State<OtherUserProfilePage> {
     return BlocConsumer<OtherUserProfileCubit, OtherUserProfileState>(
       listener: (context, state) {
         if (state is OtherUserProfileError) {
-          ScaffoldMessenger.of(
-            context,
-          ).showSnackBar(SnackBar(content: Text(state.message)));
+          ToastUtils.showErrorToast(context, state.message);
         }
       },
       builder: (context, state) {
@@ -187,10 +185,23 @@ class _OtherUserProfilePageState extends State<OtherUserProfilePage> {
                         ),
                     delegate: SliverChildBuilderDelegate((context, index) {
                       return InkWell(
-                        onLongPress: () {
-                          _postDetailView(posts[index], widget.currentUserId);
+                        onTap: () {
+                          Navigator.of(context).push(
+                            MaterialPageRoute(
+                              builder: (context) => PostDetailScreen(
+                                posts: posts,
+                                initialIndex: index,
+                                currentUserId: widget.currentUserId,
+                              ),
+                            ),
+                          );
                         },
-                        child: PostCard(post: posts[index]),
+                        child: PostCard(
+                          post: posts[index],
+                          currentUserId: widget.currentUserId,
+                          posts: posts,
+                          index: index,
+                        ),
                       );
                     }, childCount: posts.length),
                   ),
@@ -236,21 +247,6 @@ class _OtherUserProfilePageState extends State<OtherUserProfilePage> {
         ),
         child: Text(isFollowing ? 'Following' : 'Follow'),
       ),
-    );
-  }
-
-  void _postDetailView(PostModel post, String currentUserId) {
-    showDialog(
-      context: context,
-      barrierDismissible: true,
-      builder: (context) {
-        return Dialog(
-          shape: RoundedRectangleBorder(
-            borderRadius: BorderRadius.circular(16),
-          ),
-          child: PostTile(post: post, currentUserId: currentUserId),
-        );
-      },
     );
   }
 }

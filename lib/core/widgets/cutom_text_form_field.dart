@@ -16,22 +16,12 @@ class CustomTextFormField extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    return Container(
-      padding: const EdgeInsets.all(4),
-      decoration: BoxDecoration(
-        borderRadius: BorderRadius.circular(12),
-        border: Border.all(color: Colors.grey[500]!),
-      ),
-      child: TextFormField(
-        autovalidateMode: AutovalidateMode.onUserInteraction,
-        keyboardType: keyBoard,
-        controller: textController,
-        decoration: InputDecoration(
-          border: InputBorder.none,
-          label: Text(label),
-        ),
-        validator: validator,
-      ),
+    return TextFormField(
+      autovalidateMode: AutovalidateMode.onUserInteraction,
+      keyboardType: keyBoard,
+      controller: textController,
+      decoration: InputDecoration(label: Text(label)),
+      validator: validator,
     );
   }
 }

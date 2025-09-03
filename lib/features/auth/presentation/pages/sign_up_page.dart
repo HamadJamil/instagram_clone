@@ -3,6 +3,7 @@ import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:go_router/go_router.dart';
 import 'package:instagram/core/constants/app_images.dart';
 import 'package:instagram/core/routes/app_route_name.dart';
+import 'package:instagram/core/utils/toast.dart';
 import 'package:instagram/core/widgets/custom_password_field.dart';
 import 'package:instagram/core/widgets/cutom_text_form_field.dart';
 import 'package:instagram/features/auth/presentation/cubits/auth_cubit.dart';
@@ -43,11 +44,10 @@ class _SignUpPageState extends State<SignUpPage> {
     return BlocListener<AuthCubit, AuthState>(
       listener: (context, state) {
         if (state is AuthError) {
-          ScaffoldMessenger.of(
-            context,
-          ).showSnackBar(SnackBar(content: Text(state.message)));
+          ToastUtils.showErrorToast(context, state.message);
         }
         if (state is AuthVerificationSent) {
+          ToastUtils.showSuccessToast(context, 'Verification email sent');
           context.goNamed(AppRouteName.emailVerification);
         }
       },

@@ -66,9 +66,8 @@ class GalleryCubit extends Cubit<GalleryState> {
       _currentPage++;
     }
 
-    final initialSelection = _allAssets.isNotEmpty ? [_allAssets[0]] : [];
-    if (_selectedAssets.isEmpty && initialSelection.isNotEmpty) {
-      _selectedAssets = initialSelection as List<AssetEntity>;
+    if (_selectedAssets.isEmpty && _allAssets.isNotEmpty) {
+      _selectedAssets = [_allAssets[0]];
     }
 
     emit(
@@ -82,23 +81,42 @@ class GalleryCubit extends Cubit<GalleryState> {
   }
 
   void toggleMultiSelection() {
-    if (state is! GalleryLoaded) return;
+    if (state is! GalleryLoaded && state is! GalleryLoadingMore) return;
 
     _isMultiSelection = !_isMultiSelection;
 
+    if (!_isMultiSelection && _selectedAssets.length > 1) {
+      _selectedAssets = [_selectedAssets.last];
+    }
+
     if (state is GalleryLoaded) {
       final currentState = state as GalleryLoaded;
-      emit(currentState.copyWith(isMultiSelection: _isMultiSelection));
+      emit(
+        currentState.copyWith(
+          selectedAssets: _selectedAssets,
+          isMultiSelection: _isMultiSelection,
+        ),
+      );
+    } else if (state is GalleryLoadingMore) {
+      final currentState = state as GalleryLoadingMore;
+      emit(
+        currentState.copyWith(
+          selectedAssets: _selectedAssets,
+          isMultiSelection: _isMultiSelection,
+        ),
+      );
     }
   }
 
   void toggleAssetSelection(AssetEntity asset) {
-    if (state is! GalleryLoaded) return;
+    if (state is! GalleryLoaded && state is! GalleryLoadingMore) return;
 
     final newSelection = List<AssetEntity>.from(_selectedAssets);
 
     if (newSelection.contains(asset)) {
       newSelection.remove(asset);
+
+      if (newSelection.isEmpty && _allAssets.isNotEmpty) {}
     } else {
       if (!_isMultiSelection) {
         newSelection.clear();
@@ -111,6 +129,9 @@ class GalleryCubit extends Cubit<GalleryState> {
 
       if (state is GalleryLoaded) {
         final currentState = state as GalleryLoaded;
+        emit(currentState.copyWith(selectedAssets: _selectedAssets));
+      } else if (state is GalleryLoadingMore) {
+        final currentState = state as GalleryLoadingMore;
         emit(currentState.copyWith(selectedAssets: _selectedAssets));
       }
     }
@@ -146,6 +167,14 @@ class GalleryCubit extends Cubit<GalleryState> {
             isMultiSelection: _isMultiSelection,
           ),
         );
+      } else if (state is GalleryLoadingMore) {
+        final currentState = state as GalleryLoadingMore;
+        emit(
+          currentState.copyWith(
+            selectedAssets: _selectedAssets,
+            isMultiSelection: _isMultiSelection,
+          ),
+        );
       }
     }
   }
@@ -157,6 +186,7 @@ class GalleryCubit extends Cubit<GalleryState> {
     _hasMore = true;
     _allAssets.clear();
     _selectedAssets.clear();
+    _isMultiSelection = false;
     emit(GalleryInitial());
   }
 }

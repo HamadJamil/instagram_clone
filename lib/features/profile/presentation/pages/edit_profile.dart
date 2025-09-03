@@ -2,6 +2,7 @@ import 'dart:io';
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:instagram/core/models/user_model.dart';
+import 'package:instagram/core/utils/toast.dart';
 import 'package:instagram/core/utils/utils.dart';
 import 'package:instagram/core/widgets/cutom_text_form_field.dart';
 import 'package:instagram/features/Profile/presentation/cubits/profile_cubit.dart';
@@ -41,13 +42,9 @@ class _EditProfilePageState extends State<EditProfilePage> {
     return BlocListener<ProfileCubit, ProfileState>(
       listener: (context, state) {
         if (state is ProfileError) {
-          ScaffoldMessenger.of(
-            context,
-          ).showSnackBar(SnackBar(content: Text('Error: ${state.message}')));
+          ToastUtils.showErrorToast(context, state.message);
         } else if (state is ProfileLoaded) {
-          ScaffoldMessenger.of(context).showSnackBar(
-            SnackBar(content: Text('Profile updated successfully')),
-          );
+          ToastUtils.showSuccessToast(context, 'Profile updated successfully');
         }
       },
       child: Scaffold(
@@ -125,10 +122,15 @@ class _EditProfilePageState extends State<EditProfilePage> {
         name: _nameController.text,
         bio: _bioController.text.isEmpty ? null : _bioController.text,
       );
-      context.read<ProfileCubit>().update(
-        user: updatedUser,
-        profilePhoto: _selectedImage,
-      );
+      widget.user == updatedUser
+          ? ToastUtils.showSuccessToast(
+              context,
+              'Looks like your profile is already up to date — no changes were made.',
+            )
+          : context.read<ProfileCubit>().update(
+              user: updatedUser,
+              profilePhoto: _selectedImage,
+            );
 
       Future.delayed(const Duration(milliseconds: 500), () {
         if (mounted) {

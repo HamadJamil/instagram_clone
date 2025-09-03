@@ -1,13 +1,13 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:go_router/go_router.dart';
-import 'package:instagram/core/models/post_model.dart';
 import 'package:instagram/core/routes/app_route_name.dart';
+import 'package:instagram/core/utils/toast.dart';
 import 'package:instagram/features/Profile/presentation/cubits/profile_cubit.dart';
-import 'package:instagram/features/feed/presentation/widgets/post_tile.dart';
+
 import 'package:instagram/features/profile/presentation/cubits/profile_state.dart';
-import 'package:instagram/features/profile/presentation/pages/edit_profile.dart';
 import 'package:instagram/features/profile/presentation/widgets/post_card.dart';
+
 import 'package:instagram/features/profile/presentation/widgets/stat_item.dart';
 
 class ProfilePage extends StatefulWidget {
@@ -23,6 +23,7 @@ class _ProfilePageState extends State<ProfilePage> {
   void initState() {
     super.initState();
     context.read<ProfileCubit>().load(widget.userId);
+    debugPrint('Profile Page Init State');
   }
 
   @override
@@ -30,11 +31,10 @@ class _ProfilePageState extends State<ProfilePage> {
     return BlocConsumer<ProfileCubit, ProfileState>(
       listener: (context, state) {
         if (state is ProfileError) {
-          ScaffoldMessenger.of(
-            context,
-          ).showSnackBar(SnackBar(content: Text('Error: ${state.message}')));
+          ToastUtils.showErrorToast(context, state.message);
         }
         if (state is ProfileLogOut) {
+          ToastUtils.showSuccessToast(context, 'Logged out successfully');
           context.goNamed(AppRouteName.login);
         }
       },
@@ -140,12 +140,9 @@ class _ProfilePageState extends State<ProfilePage> {
                         const SizedBox(height: 16.0),
                         OutlinedButton(
                           onPressed: () {
-                            Navigator.push(
-                              context,
-                              MaterialPageRoute(
-                                builder: (context) =>
-                                    EditProfilePage(user: user),
-                              ),
+                            context.pushNamed(
+                              AppRouteName.editProfilePage,
+                              extra: user,
                             );
                           },
                           child: Text('Edit Profile'),
@@ -175,11 +172,11 @@ class _ProfilePageState extends State<ProfilePage> {
                           mainAxisSpacing: 3,
                         ),
                     delegate: SliverChildBuilderDelegate((context, index) {
-                      return InkWell(
-                        onLongPress: () {
-                          postDetailView(posts[index], widget.userId);
-                        },
-                        child: PostCard(post: posts[index]),
+                      return PostCard(
+                        posts: posts,
+                        post: posts[index],
+                        currentUserId: user.uid,
+                        index: index,
                       );
                     }, childCount: posts.length),
                   ),
@@ -199,21 +196,6 @@ class _ProfilePageState extends State<ProfilePage> {
           );
         }
         return Center(child: Text('Something went wrong!'));
-      },
-    );
-  }
-
-  void postDetailView(PostModel post, String currentUserId) {
-    showDialog(
-      context: context,
-      barrierDismissible: true,
-      builder: (context) {
-        return Dialog(
-          shape: RoundedRectangleBorder(
-            borderRadius: BorderRadius.circular(16),
-          ),
-          child: PostTile(post: post, currentUserId: currentUserId),
-        );
       },
     );
   }

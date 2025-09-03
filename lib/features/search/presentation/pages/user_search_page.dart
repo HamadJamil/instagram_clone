@@ -1,11 +1,12 @@
-// search_page.dart
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
+import 'package:go_router/go_router.dart';
 import 'package:instagram/core/models/user_model.dart';
+import 'package:instagram/core/routes/app_route_name.dart';
 import 'package:instagram/core/theme/app_colors.dart';
+import 'package:instagram/core/utils/toast.dart';
 import 'package:instagram/features/search/presentation/cubits/search/search_cubit.dart';
 import 'package:instagram/features/search/presentation/cubits/search/search_state.dart';
-import 'package:instagram/features/search/presentation/pages/other_user_page.dart';
 
 class UserSearchPage extends StatefulWidget {
   const UserSearchPage({super.key, required this.userId});
@@ -45,6 +46,7 @@ class _UserSearchPageState extends State<UserSearchPage> {
               icon: const Icon(Icons.clear),
               onPressed: () {
                 _searchController.clear();
+                FocusScope.of(context).unfocus();
                 context.read<SearchCubit>().clearSearch();
               },
             ),
@@ -54,78 +56,85 @@ class _UserSearchPageState extends State<UserSearchPage> {
           },
         ),
       ),
-      body: BlocBuilder<SearchCubit, SearchState>(
-        builder: (context, state) {
-          if (state is SearchInitial) {
-            return const Center(
-              child: Column(
-                mainAxisAlignment: MainAxisAlignment.center,
-                children: [
-                  Icon(Icons.search, size: 64, color: AppColors.grey300),
-                  SizedBox(height: 16),
-                  Text(
-                    'Search for users',
-                    style: TextStyle(color: AppColors.grey600),
-                  ),
-                ],
-              ),
-            );
-          }
-
-          if (state is SearchLoading) {
-            return const Center(
-              child: Column(
-                mainAxisAlignment: MainAxisAlignment.center,
-                children: [
-                  CircularProgressIndicator.adaptive(),
-                  SizedBox(height: 16),
-                  Text('Searching...'),
-                ],
-              ),
-            );
-          }
-
+      body: BlocListener<SearchCubit, SearchState>(
+        listener: (context, state) {
           if (state is SearchError) {
-            return Center(
-              child: Column(
-                mainAxisAlignment: MainAxisAlignment.center,
-                children: [
-                  Icon(Icons.error_outline, size: 64, color: Colors.red),
-                  SizedBox(height: 16),
-                  Text('Error: ${state.message}'),
-                  SizedBox(height: 16),
-                  ElevatedButton(
-                    onPressed: () {
-                      context.read<SearchCubit>().searchUsers(
-                        _searchController.text,
-                        widget.userId,
-                      );
-                    },
-                    child: Text('Try Again'),
-                  ),
-                ],
-              ),
-            );
+            ToastUtils.showErrorToast(context, state.message);
           }
-
-          if (state is SearchLoaded) {
-            final users = state.users;
-            final query = state.query;
-            if (users.isEmpty) {
-              return Center(child: Text('No users found for "$query"'));
+        },
+        child: BlocBuilder<SearchCubit, SearchState>(
+          builder: (context, state) {
+            if (state is SearchInitial) {
+              return const Center(
+                child: Column(
+                  mainAxisAlignment: MainAxisAlignment.center,
+                  children: [
+                    Icon(Icons.search, size: 64, color: AppColors.grey300),
+                    SizedBox(height: 16),
+                    Text(
+                      'Search for users',
+                      style: TextStyle(color: AppColors.grey600),
+                    ),
+                  ],
+                ),
+              );
             }
 
-            return ListView.builder(
-              itemCount: users.length,
-              itemBuilder: (context, index) {
-                final user = users[index];
-                return UserListItem(user: user, userId: widget.userId);
-              },
-            );
-          }
+            if (state is SearchLoading) {
+              return const Center(
+                child: Column(
+                  mainAxisAlignment: MainAxisAlignment.center,
+                  children: [
+                    CircularProgressIndicator.adaptive(),
+                    SizedBox(height: 16),
+                    Text('Searching...'),
+                  ],
+                ),
+              );
+            }
 
-          return Container();
-        },
+            if (state is SearchError) {
+              return Center(
+                child: Column(
+                  mainAxisAlignment: MainAxisAlignment.center,
+                  children: [
+                    Icon(Icons.error_outline, size: 64, color: Colors.red),
+                    SizedBox(height: 16),
+                    Text('Error: ${state.message}'),
+                    SizedBox(height: 16),
+                    ElevatedButton(
+                      onPressed: () {
+                        context.read<SearchCubit>().searchUsers(
+                          _searchController.text,
+                          widget.userId,
+                        );
+                      },
+                      child: Text('Try Again'),
+                    ),
+                  ],
+                ),
+              );
+            }
+
+            if (state is SearchLoaded) {
+              final users = state.users;
+              final query = state.query;
+              if (users.isEmpty) {
+                return Center(child: Text('No users found for "$query"'));
+              }
+
+              return ListView.builder(
+                itemCount: users.length,
+                itemBuilder: (context, index) {
+                  final user = users[index];
+                  return UserListItem(user: user, userId: widget.userId);
+                },
+              );
+            }
+
+            return Container();
+          },
+        ),
       ),
     );
   }
@@ -149,14 +158,9 @@ class UserListItem extends StatelessWidget {
       ),
       title: Text(user.name, style: TextStyle(fontWeight: FontWeight.bold)),
       onTap: () {
-        Navigator.push(
-          context,
-          MaterialPageRoute(
-            builder: (context) => OtherUserProfilePage(
-              targetUserId: user.uid,
-              currentUserId: userId,
-            ),
-          ),
+        context.pushNamed(
+          AppRouteName.otherUserProfile,
+          extra: {'currentUserId': userId, 'targetUserId': user.uid},
         );
       },
     );

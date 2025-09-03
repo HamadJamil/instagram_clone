@@ -54,6 +54,18 @@ class GalleryLoadingMore extends GalleryState {
     required this.isMultiSelection,
   });
 
+  GalleryLoadingMore copyWith({
+    List<AssetEntity>? assets,
+    List<AssetEntity>? selectedAssets,
+    bool? isMultiSelection,
+  }) {
+    return GalleryLoadingMore(
+      assets: assets ?? this.assets,
+      selectedAssets: selectedAssets ?? this.selectedAssets,
+      isMultiSelection: isMultiSelection ?? this.isMultiSelection,
+    );
+  }
+
   @override
   List<Object> get props => [assets, selectedAssets, isMultiSelection];
 }

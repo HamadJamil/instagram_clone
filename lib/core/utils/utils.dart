@@ -16,7 +16,7 @@ String getMessageFromErrorCode(String code) {
     case 'too-many-requests':
       return 'Too many requests';
     default:
-      return 'Unknown error';
+      return 'Request failed';
   }
 }
 

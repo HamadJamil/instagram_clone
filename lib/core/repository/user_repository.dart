@@ -1,6 +1,5 @@
 import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:instagram/core/models/user_model.dart';
-import 'package:instagram/core/utils/exceptions.dart';
 
 class UserRepository {
   final FirebaseFirestore _firestore;
@@ -10,9 +9,9 @@ class UserRepository {
   Future<void> create(UserModel user) async {
     try {
       await _firestore.collection('users').doc(user.uid).set(user.toJson());
-    } on Exception catch (e) {
-      throw FirestoreException(
-        'FirestoreUserService: Failed to create user: ${e.toString()}',
+    } catch (e) {
+      throw Exception(
+        'Unable to create your account. Please check your connection and try again.',
       );
     }
   }
@@ -25,7 +24,7 @@ class UserRepository {
         'photoUrl': user.photoUrl,
       });
     } catch (e) {
-      throw Exception('FirestoreProfileService :Failed to update profile: $e');
+      throw Exception('Could not update your profile. Please try again.');
     }
   }
 
@@ -33,12 +32,14 @@ class UserRepository {
     try {
       final doc = await _firestore.collection('users').doc(userId).get();
       if (!doc.exists) {
-        throw Exception(' FirestoreProfileService :User document not found');
+        throw Exception(
+          'User profile not found. The account may have been deleted.',
+        );
       }
       return UserModel.fromJson(doc.data()!);
     } catch (e) {
       throw Exception(
-        'FirestoreProfileService :Failed to get user profile: $e',
+        'Unable to load profile information. Please check your connection.',
       );
     }
   }
@@ -58,32 +59,21 @@ class UserRepository {
           .toList();
       return user;
     } catch (e) {
-      throw Exception('FirestoreSearchService: Failed to search users: $e');
-    }
-  }
-
-  Future<void> incrementPostCount(String userId) async {
-    try {
-      final userRef = _firestore.collection('users').doc(userId);
-      await userRef.set({
-        'postCount': FieldValue.increment(1),
-      }, SetOptions(merge: true));
-    } catch (e) {
       throw Exception(
-        'FirestoreProfileService :Failed to increment post count: $e',
+        'Search failed. Please check your connection and try again.',
       );
     }
   }
 
-  Future<void> decrementPostCount(String userId) async {
+  Future<void> postCount(String userId, int incrementBy) async {
     try {
       final userRef = _firestore.collection('users').doc(userId);
       await userRef.set({
-        'postCount': FieldValue.increment(-1),
+        'postCount': FieldValue.increment(incrementBy),
       }, SetOptions(merge: true));
     } catch (e) {
       throw Exception(
-        'FirestoreProfileService :Failed to decrement post count: $e',
+        'Could not update your post count. This won\'t affect your post.',
       );
     }
   }
@@ -101,7 +91,7 @@ class UserRepository {
       });
       await batch.commit();
     } catch (e) {
-      throw Exception('FirestoreProfileService :Failed to follow user: $e');
+      throw Exception('Unable to follow this user. Please try again.');
     }
   }
 
@@ -118,7 +108,7 @@ class UserRepository {
       });
       await batch.commit();
     } catch (e) {
-      throw Exception('FirestoreProfileService :Failed to unfollow user: $e');
+      throw Exception('Unable to unfollow this user. Please try again.');
     }
   }
 }
